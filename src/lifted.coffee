@@ -1,5 +1,7 @@
 import {isFunction, lift, bind} from "fairmont"
 
+avoidedServices = ["CloudSearchDomain", "IotData"]
+
 liftService = (s) ->
   service = {}
   for k, v of s
@@ -11,7 +13,7 @@ liftAll = (AWS) ->
   for k, v of AWS
     if isFunction v && v.__super__
       if v.__super__.name == "Service"
-        services[k] = liftService v
+        services[k] = liftService new v() if k not in avoidedServices
   services
 
 _AWS = (AWS) -> liftAll AWS
