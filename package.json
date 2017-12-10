@@ -35,7 +35,8 @@
   "homepage": "https://github.com/pandastrike/sundog#readme",
   "dependencies": {
     "aws-sdk": "2.167.0",
-    "fairmont": "2.0.1"
+    "fairmont": "2.0.1",
+    "mime": "^2.0.3"
   },
   "devDependencies": {
     "babel-core": "6.26.0",

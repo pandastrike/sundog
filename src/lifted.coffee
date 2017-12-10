@@ -10,10 +10,8 @@ liftService = (s) ->
 
 liftAll = (AWS) ->
   services = {}
-  for k, v of AWS
-    if isFunction v && v.__super__
-      if v.__super__.name == "Service"
-        services[k] = liftService new v() if k not in avoidedServices
+  for k, v of AWS when (isFunction v) && v.__super__?.name == "Service"
+    services[k] = liftService new v() if k not in avoidedServices
   services
 
 _AWS = (AWS) -> liftAll AWS
