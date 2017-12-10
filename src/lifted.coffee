@@ -1,32 +1,19 @@
+import {isFunction, lift, bind} from "fairmont"
 
-# {async, read, isFunction, where, lift} = require "fairmont"
-# {task} = require "panda-9000"
-#
-# # this should be in f-core
-# bind = (o, f) -> f.bind o
-#
-# liftModule = (m) ->
-#   lifted = {}
-#   for k, v of m
-#     lifted[k] = if isFunction v then (lift v.bind m) else v
-#   lifted
-#
-# # Module's we'd like to invoke from AWS are listed and lifted here.
-# acm = liftModule new AWS.ACM()
-# agw = liftModule new AWS.APIGateway()
-# gw = liftModule new AWS.APIGateway()
-# cfo = liftModule new AWS.CloudFormation()
-# cfr = liftModule new AWS.CloudFront()
-# lambda = liftModule new AWS.Lambda()
-# route53 = liftModule new AWS.Route53()
-# s3 = liftModule new AWS.S3()
-#
-# {acm, agw, gw, cfo, cfr, lambda, route53, s3}
+liftService = (s) ->
+  service = {}
+  for k, v of s
+    service[k] = if isFunction v then lift bind v, s else v
+  service
 
-_AWS = (engine) ->
-  console.log engine
+liftAll = (AWS) ->
+  services = {}
+  for k, v of AWS
+    if isFunction v && v.__super__
+      if v.__super__.name == "Service"
+        services[k] = liftService v
+  services
 
-
-
+_AWS = (AWS) -> liftAll AWS
 
 export default _AWS

@@ -25,3 +25,6 @@ Engine = (region) ->
      secretAccessKey: key
      region: region || "us-west-2"
      sslEnabled: true
+  AWS
+
+export default Engine

@@ -1,1 +1,3 @@
-export default {test: test}
+Helpers = (AWS) -> {}
+
+export default Helpers

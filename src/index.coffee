@@ -1,15 +1,14 @@
 import Engine from "./engine"
-import _AWS from "./lifted"
-import AWS from "./primitives"
-import Helpers from "./helpers"
+import Pillar1 from "./lifted"
+import Pillar2 from "./primitives"
+import Pillar3 from "./helpers"
 
 start = (region) ->
-  engine = Engine region
-  _AWS = _AWS engine
-  # AWS = AWS _AWS
-  # Helpers = Helpers _AWS
+  engine = await Engine region
+  _AWS = Pillar1 engine
+  AWS = Pillar2 _AWS
+  Helpers = Pillar3 AWS
 
-  #{_AWS, AWS, Helpers}
-  {_AWS}
+  {_AWS, AWS, Helpers}
 
 export default start

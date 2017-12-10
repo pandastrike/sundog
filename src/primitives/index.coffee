@@ -1,1 +1,3 @@
-export default {test: test}
+Primitives = (_AWS) -> {}
+
+export default Primitives
