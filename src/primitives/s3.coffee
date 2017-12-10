@@ -3,7 +3,7 @@
 # prefixed "bucket*", whereas object methods will have no prefix.
 
 import {createReadStream} from "fs"
-import {curry, sleep, read, md5} from "fairmont"
+import {curry, sleep, read, md5, cat} from "fairmont"
 import mime from "mime"
 
 import {notFound} from "./utils"
@@ -28,10 +28,6 @@ S3 = (_AWS) ->
     return true if await bucketExists name
     await s3.createBucket {Bucket: name}
     await sleep 15000 # race condition with S3 API.  Wait to be available.
-
-  touch = curry (name, key) ->
-    return true if await exists name, key
-    await put name, key, "", "text/plain"
 
   put = curry (name, key, data, filetype) ->
     if filetype
