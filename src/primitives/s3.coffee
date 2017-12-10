@@ -78,7 +78,7 @@ S3 = (_AWS) ->
     {IsTruncated, Contents, NextContinuationToken} = await s3.listObjectsV2 p
     if IsTruncated
       items = cat items, Contents
-      await list name, objects, NextContinuationToken
+      await list name, items, NextContinuationToken
     else
       cat items, Contents
 
