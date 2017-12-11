@@ -3,6 +3,10 @@
   "version": "0.0.1",
   "description": "Wrapper for the JavaScript AWS SDK, powered by Fairmont to give it a functional boost",
   "main": "lib/index.js",
+  "files": [
+    "lib/",
+    "LICENSE"
+  ],
   "scripts": {
     "prepare": "node_modules/.bin/coffee --compile --transpile --inline-map --output lib/ src/",
     "postpublish": "(json -f package.json version | xargs -I version git tag -am version version) && git push --tags",

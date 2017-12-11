@@ -21,6 +21,7 @@ S3 = (_AWS) ->
   exists = curry (name, key) ->
     try
       await s3.headObject {Bucket: name, Key: key}
+      true
     catch e
       notFound e
 
@@ -83,7 +84,7 @@ S3 = (_AWS) ->
       cat items, Contents
 
 
-  {bucketExists, exists, bucketTouch, touch, put, get, del, bucketDel, list}
+  {bucketExists, exists, bucketTouch, put, get, del, bucketDel, list}
 
 
 export default S3
