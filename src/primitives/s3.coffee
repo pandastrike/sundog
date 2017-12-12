@@ -88,10 +88,10 @@ S3 = (_AWS) ->
   # to violate that limit, but we can do better than one at a time.
   bucketEmpty = (name) ->
     items = await list name
-    await del name, i for i in item
+    await del name, i.Key for i in items
 
 
-  {bucketExists, exists, bucketTouch, put, get, del, bucketDel, list}
+  {bucketExists, exists, bucketTouch, put, get, del, bucketDel, list, bucketEmpty}
 
 
 export default S3
