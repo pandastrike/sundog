@@ -83,6 +83,13 @@ S3 = (_AWS) ->
     else
       cat items, Contents
 
+  # TODO: make this more efficient by throttling to X connections at once. AWS
+  # only supports N requests per second from an account, and I don't want this
+  # to violate that limit, but we can do better than one at a time.
+  bucketEmpty = (name) ->
+    items = await list name
+    await del name, i for i in item
+
 
   {bucketExists, exists, bucketTouch, put, get, del, bucketDel, list}
 
