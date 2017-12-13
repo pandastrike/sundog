@@ -1,6 +1,6 @@
 {
   "name": "sundog",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Wrapper for the JavaScript AWS SDK, powered by Fairmont to give it a functional boost",
   "main": "lib/index.js",
   "files": [
@@ -38,7 +38,6 @@
   },
   "homepage": "https://github.com/pandastrike/sundog#readme",
   "dependencies": {
-    "aws-sdk": "2.167.0",
     "fairmont": "2.0.1",
     "mime": "^2.0.3"
   },
