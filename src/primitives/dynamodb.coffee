@@ -27,7 +27,16 @@ DynamoDB = (_AWS) ->
       ProvisionedThroughput: throughput
 
     {TableDescription}= await db.createTable merge p, options
-    Table
+    TableDescription
+
+  tableUpdate = (name, attributes, throughput, options={}) ->
+    p =
+      TableName: name
+      AttributeDefinitions: attributes
+      ProvisionedThroughput: throughput
+
+    {TableDescription}= await db.updateTable merge p, options
+    TableDescription
 
   tableDel = (name) ->
     try
@@ -130,5 +139,7 @@ DynamoDB = (_AWS) ->
       current
     else
       await scan name, filterEx, options, current
+
+    {tableGet, tableCreate, tableUpdate, tableDel, tableWaitForReady, tableWaitForDeleted, tableEmpty, get, put, update, del, query, scan}
 
 export default DynamoDB
