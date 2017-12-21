@@ -3,7 +3,7 @@
 # This follows the naming convention that methods that work on Tables will be
 # prefixed "table*", whereas item methods will have no prefix.
 
-import {curry, merge, sleep, empty, cat} from "fairmont"
+import {merge, sleep, empty, cat, collect, project, pick, curry} from "fairmont"
 import {notFound} from "./utils"
 
 DynamoDB = (_AWS) ->
@@ -14,10 +14,10 @@ DynamoDB = (_AWS) ->
   #===========================================================================
   tableGet = (name) ->
     try
-      {TableDescription} = await db.describeTable TableName: name
-      TableDescription
+      {Table} = await db.describeTable TableName: name
+      Table
     catch e
-      notFound e
+      notFound e, 400
 
   tableCreate = (name, keys, attributes, throughput, options={}) ->
     p =
@@ -26,8 +26,8 @@ DynamoDB = (_AWS) ->
       AttributeDefinitions: attributes
       ProvisionedThroughput: throughput
 
-    {TableDescription}= await db.createTable merge p, options
-    TableDescription
+    {Table}= await db.createTable merge p, options
+    Table
 
   tableUpdate = (name, attributes, throughput, options={}) ->
     p =
@@ -35,8 +35,8 @@ DynamoDB = (_AWS) ->
       AttributeDefinitions: attributes
       ProvisionedThroughput: throughput
 
-    {TableDescription}= await db.updateTable merge p, options
-    TableDescription
+    {Table}= await db.updateTable merge p, options
+    Table
 
   tableDel = (name) ->
     try
@@ -65,14 +65,22 @@ DynamoDB = (_AWS) ->
   # TODO: make this more efficient by throttling to X connections at once. AWS
   # only supports N requests per second from an account, and I don't want this
   # to violate that limit, but we can do better than one at a time.
+  _passPrimaryKeys = curry (keys, item) ->
+    f = (key, value) -> key in keys
+    pick f, item
+
   tableEmpty = (name) ->
-    items = await query name
-    await del name, i for i in items
+    {KeySchema} = await tableGet name
+    keys = collect project "AttributeName", KeySchema
+    onlyPrimary = _passPrimaryKeys keys
+
+    {Items} = await scan name
+    await del name, onlyPrimary(i) for i in Items
 
   #===========================================================================
   # Items
   #===========================================================================
-  get = curry (name, key, options={}) ->
+  get = (name, key, options={}) ->
     try
       {ReturnConsumedCapacity} = options
       p = {TableName: name, Key: key}
@@ -81,15 +89,15 @@ DynamoDB = (_AWS) ->
     catch e
       notFound e
 
-  put = curry (name, item, options={}) ->
+  put = (name, item, options={}) ->
     p = {TableName: name, Item: item}
     await db.putItem merge p, options
 
-  update = curry (name, key, data, options={}) ->
+  update = (name, key, data, options={}) ->
     p = {TableName: name, Key: key, UpdateExpression: data}
     await db.putItem merge p, options
 
-  del = curry (name, key, options={}) ->
+  del = (name, key, options={}) ->
     p = {TableName: name, Key: key}
     await db.deleteItem merge p, options
 
@@ -98,7 +106,7 @@ DynamoDB = (_AWS) ->
     Items: []
     Count: 0
     ScannedCount: 0
-    LastEvaluatedKey: {}
+    LastEvaluatedKey: false
     ConsumedCapacity: []
 
   _catCurrent = (current, results) ->
@@ -106,12 +114,12 @@ DynamoDB = (_AWS) ->
     current.Items = cat current.Items, Items
     current.Count += Count
     current.ScannedCount += ScannedCount
-    current.LastEvaluatedKey = LastEvaluatedKey
+    current.LastEvaluatedKey = LastEvaluatedKey if LastEvaluatedKey
     current.ConsumedCapacity = current.ConsumedCapacity.push ConsumedCapacity
     current
 
 
-  query = curry (name, keyEx, filterEx, options={}, current) ->
+  query = (name, keyEx, filterEx, options={}, current) ->
     current = _setupCurrent() if !current
 
     p = {TableName: name}
@@ -121,25 +129,25 @@ DynamoDB = (_AWS) ->
     results = await db.query merge p, options
 
     current = _catCurrent current, results
-    if empty(LastEvaluatedKey) || options.Limit
+    if !results.LastEvaluatedKey || options.Limit
       current
     else
       await query name, keyEx, filterEx, options, current
 
-  scan = curry (name, filterEx, options={}, current) ->
+  scan = (name, filterEx, options={}, current) ->
     current = _setupCurrent() if !current
 
     p = {TableName: name}
     p.FilterExpression = filterEx if filterEx
     p.ExclusiveStartKey = current.LastEvaluatedKey if current.LastEvaluatedKey
-    results = await db.query merge p, options
+    results = await db.scan merge p, options
 
     current = _catCurrent current, results
-    if empty(LastEvaluatedKey) || options.Limit
+    if !results.LastEvaluatedKey || options.Limit
       current
     else
       await scan name, filterEx, options, current
 
-    {tableGet, tableCreate, tableUpdate, tableDel, tableWaitForReady, tableWaitForDeleted, tableEmpty, get, put, update, del, query, scan}
+  {tableGet, tableCreate, tableUpdate, tableDel, tableWaitForReady, tableWaitForDeleted, tableEmpty, get, put, update, del, query, scan}
 
 export default DynamoDB
