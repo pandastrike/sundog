@@ -3,7 +3,7 @@
 # This follows the naming convention that methods that work on Tables will be
 # prefixed "table*", whereas item methods will have no prefix.
 
-import {merge, sleep, empty, cat, collect, project, pick, curry} from "fairmont"
+import {merge, sleep, empty, cat, collect, project, pick, curry, difference} from "fairmont"
 import {notFound} from "./utils"
 
 DynamoDB = (_AWS) ->
@@ -26,17 +26,17 @@ DynamoDB = (_AWS) ->
       AttributeDefinitions: attributes
       ProvisionedThroughput: throughput
 
-    {Table}= await db.createTable merge p, options
-    Table
+    {TableDescription}= await db.createTable merge p, options
+    TableDescription
 
   tableUpdate = (name, attributes, throughput, options={}) ->
     p =
       TableName: name
       AttributeDefinitions: attributes
-      ProvisionedThroughput: throughput
+    p.ProvisionedThroughput = throughput if throughput
 
-    {Table}= await db.updateTable merge p, options
-    Table
+    {TableDescription}= await db.updateTable merge p, options
+    TableDescription
 
   tableDel = (name) ->
     try
@@ -44,7 +44,8 @@ DynamoDB = (_AWS) ->
     catch e
       notFound e
 
-  tableWaitForReady = (name) ->
+
+  _isTableReady = (name) ->
     while true
       {TableStatus} = await tableGet name
       if !TableStatus
@@ -53,6 +54,22 @@ DynamoDB = (_AWS) ->
         await sleep 5000
       else
         return true
+
+  _areIndexesReady = (name) ->
+    while true
+      {GlobalSecondaryIndexes: indexes} = await tableGet name
+      return true if !indexes
+      statuses = collect project "IndexStatus", indexes
+      if empty difference statuses, ["ACTIVE"]
+        return true
+      else
+        await sleep 5000
+
+  # The optional second parameter allows the developer to also wait on all global secondary indexes to also be ready.
+  tableWaitForReady = (name, indexWait) ->
+    checks = [_isTableReady name]
+    checks.push _areIndexesReady name if indexWait
+    await Promise.all checks
 
   tableWaitForDeleted = (name) ->
     while true
@@ -66,16 +83,16 @@ DynamoDB = (_AWS) ->
   # only supports N requests per second from an account, and I don't want this
   # to violate that limit, but we can do better than one at a time.
   _passPrimaryKeys = curry (keys, item) ->
-    f = (key, value) -> key in keys
+    f = (key) -> key in keys
     pick f, item
 
   tableEmpty = (name) ->
     {KeySchema} = await tableGet name
     keys = collect project "AttributeName", KeySchema
-    onlyPrimary = _passPrimaryKeys keys
+    onlyKeys = _passPrimaryKeys keys
 
     {Items} = await scan name
-    await del name, onlyPrimary(i) for i in Items
+    await del name, onlyKeys(i) for i in Items
 
   #===========================================================================
   # Items
