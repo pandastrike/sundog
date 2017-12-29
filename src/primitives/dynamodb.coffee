@@ -3,7 +3,7 @@
 # This follows the naming convention that methods that work on Tables will be
 # prefixed "table*", whereas item methods will have no prefix.
 
-import {merge, sleep, empty, cat, collect, project, pick, curry, difference} from "fairmont"
+import {merge, sleep, empty, cat, collect, project, pick, curry, difference, isObject, first, keys, values} from "fairmont"
 import {notFound} from "./utils"
 
 DynamoDB = (_AWS) ->
@@ -17,7 +17,7 @@ DynamoDB = (_AWS) ->
       {Table} = await db.describeTable TableName: name
       Table
     catch e
-      notFound e, 400
+      notFound e, 400, "ResourceNotFoundException"
 
   tableCreate = (name, keys, attributes, throughput, options={}) ->
     p =
@@ -98,13 +98,10 @@ DynamoDB = (_AWS) ->
   # Items
   #===========================================================================
   get = (name, key, options={}) ->
-    try
-      {ReturnConsumedCapacity} = options
-      p = {TableName: name, Key: key}
-      {Item, ConsumedCapacity} = await db.getItem merge p, options
-      if ReturnConsumedCapacity then {Item, ConsumedCapacity} else Item
-    catch e
-      notFound e
+    {ReturnConsumedCapacity} = options
+    p = {TableName: name, Key: key}
+    {Item, ConsumedCapacity} = await db.getItem merge p, options
+    if ReturnConsumedCapacity then {Item, ConsumedCapacity} else Item
 
   put = (name, item, options={}) ->
     p = {TableName: name, Item: item}
@@ -165,6 +162,76 @@ DynamoDB = (_AWS) ->
     else
       await scan name, filterEx, options, current
 
-  {tableGet, tableCreate, tableUpdate, tableDel, tableWaitForReady, tableWaitForDeleted, tableEmpty, get, put, update, del, query, scan}
+  #===========================================================================
+  # Type Helpers
+  #===========================================================================
+  # DynamoDB locks its data within a type system and expects data to be input
+  # that way.  These helpers write and parse that type system.
+  _transform = (x, f) ->
+    out = {}
+    if isObject x
+      out[k] = f v for k, v of x
+      out
+    else
+      f x
+
+  toS = (x) ->
+    f = (s) -> S: s.toString()
+    _transform x, f
+
+  toN = (x) ->
+    f = (n) -> N: n.toString()
+    _transform x, f
+
+  toB = (x) ->
+    f = (b) -> B: b.toString("base64")
+    _transform x, f
+
+  toSS = (x) ->
+    f = (a) -> SS: (i.toString() for i in a)
+    _transform x, f
+
+  toNS = (x) ->
+    f = (a) -> NS: (i.toString() for i in a)
+    _transform x, f
+
+  toBS = (x) ->
+    f = (a) -> BS: (i.toString("base64") for i in a)
+    _transform x, f
+
+  toM = (x) ->
+    f = (m) -> M: m
+    _transform x, f
+
+  toL = (x) ->
+    f = (l) -> L: l
+    _transform x, f
+
+  toNull = (x) ->
+    f = (n) -> NULL: n
+    _transform x, f
+
+  toBool = (x) ->
+    f = (b) -> BOOL: b
+    _transform x, f
+
+  parse = (attributes) ->
+    result = {}
+    for name, typeObj of attributes
+      dataType = first keys typeObj
+      v = first values typeObj
+      result[name] = switch dataType
+        when "S", "SS", "L", "BOOL" then v
+        when "N" then new Number v
+        when "B" then Buffer.from v, "base64"
+        when "NS" then (new Number i for i in v)
+        when "BS" then (Buffer.from i, "base64" for i in v)
+        when "NULL" then !v
+        when "M" then parse v
+        else
+          throw new Error "Unable to parse object for DynamoDB attribute type. #{dataType}"
+    result
+
+  {tableGet, tableCreate, tableUpdate, tableDel, tableWaitForReady, tableWaitForDeleted, tableEmpty, get, put, update, del, query, scan, toS, toN, toB, toSS, toNS, toBS, toM, toL, toNull, toBool, parse, merge}
 
 export default DynamoDB
