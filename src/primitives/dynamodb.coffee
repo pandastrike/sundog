@@ -82,17 +82,16 @@ DynamoDB = (_AWS) ->
   # TODO: make this more efficient by throttling to X connections at once. AWS
   # only supports N requests per second from an account, and I don't want this
   # to violate that limit, but we can do better than one at a time.
-  _passPrimaryKeys = curry (keys, item) ->
+  keysFilter = curry (keys, item) ->
     f = (key) -> key in keys
     pick f, item
 
   tableEmpty = (name) ->
     {KeySchema} = await tableGet name
-    keys = collect project "AttributeName", KeySchema
-    onlyKeys = _passPrimaryKeys keys
+    filter = keysFilter collect project "AttributeName", KeySchema
 
     {Items} = await scan name
-    await del name, onlyKeys(i) for i in Items
+    await del name, filter(i) for i in Items
 
   #===========================================================================
   # Type Helpers
@@ -153,10 +152,6 @@ DynamoDB = (_AWS) ->
 
   put = (name, item, options={}) ->
     p = {TableName: name, Item: item}
-    await db.putItem merge p, options
-
-  update = (name, key, data, options={}) ->
-    p = {TableName: name, Key: key, UpdateExpression: data}
     await db.putItem merge p, options
 
   del = (name, key, options={}) ->
@@ -235,6 +230,13 @@ DynamoDB = (_AWS) ->
   Method.define qv, isFunction, (f) -> (x) -> _qv f x
   Method.define qv, isObject, (o) -> _qv o
 
+  update = (name, key, updateEx, options={}) ->
+    p = {TableName: name, Key: key}
+    {result, values} = _parseConditional updateEx
+    options.UpdateExpression = result if result
+    options.ExpressionAttributeValues = values if values
+    await db.putItem merge p, options
+
   query = (name, keyEx, filterEx, options={}, current) ->
     current = _setupCurrent() if !current
     if !current.options
@@ -271,6 +273,6 @@ DynamoDB = (_AWS) ->
 
 
 
-  {tableGet, tableCreate, tableUpdate, tableDel, tableWaitForReady, tableWaitForDeleted, tableEmpty, to, parse, merge, get, put, update, del, qv, query, scan}
+  {tableGet, tableCreate, tableUpdate, tableDel, tableWaitForReady, tableWaitForDeleted, tableEmpty, keysFilter, to, parse, merge, get, put, del, qv, update, query, scan}
 
 export default DynamoDB
