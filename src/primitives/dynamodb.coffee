@@ -3,7 +3,7 @@
 # This follows the naming convention that methods that work on Tables will be
 # prefixed "table*", whereas item methods will have no prefix.
 
-import {merge, sleep, empty, cat, collect, project, pick, curry, difference, isObject, first, keys, values} from "fairmont"
+import {merge, sleep, empty, cat, collect, project, pick, curry, difference, first, keys, values, Method, isFunction, isObject} from "fairmont"
 import {notFound} from "./utils"
 
 DynamoDB = (_AWS) ->
@@ -95,6 +95,54 @@ DynamoDB = (_AWS) ->
     await del name, onlyKeys(i) for i in Items
 
   #===========================================================================
+  # Type Helpers
+  #===========================================================================
+  # DynamoDB includes type information mapped into its data strctures.
+  # It expects data to be input that way, and includes it when fetched.
+  # These helpers write and parse that type system.
+  _transform = (f) ->
+    (x) ->
+      if isObject x
+        out = {}
+        out[k] = _mark("anyonymousDynamodbValue", f v) for k, v of x
+        _mark "namedDynamodbValue", out
+      else
+        _mark "anyonymousDynamodbValue", f x
+
+  _mark = (name, object) -> Object.defineProperty object, "name", value: name
+
+  to =
+    S: _transform (s) -> S: s.toString()
+    N: _transform (n) -> N: n.toString()
+    B: _transform (b) -> B: b.toString("base64")
+    SS: _transform (a) -> SS: (i.toString() for i in a)
+    NS: _transform (a) -> NS: (i.toString() for i in a)
+    BS: _transform (a) -> BS: (i.toString("base64") for i in a)
+    M: _transform (m) -> M: m
+    L: _transform (l) -> L: l
+    Null: _transform (n) -> NULL: n
+    Bool: _transform (b) -> BOOL: b
+
+  parse = (attributes) ->
+    result = {}
+    for name, typeObj of attributes
+      dataType = first keys typeObj
+      v = first values typeObj
+      result[name] = switch dataType
+        when "S", "SS", "L", "BOOL" then v
+        when "N" then new Number v
+        when "B" then Buffer.from v, "base64"
+        when "NS" then (new Number i for i in v)
+        when "BS" then (Buffer.from i, "base64" for i in v)
+        when "NULL"
+          if v then null else undefined
+        when "M" then parse v
+        else
+          throw new Error "Unable to parse object for DynamoDB attribute type. #{dataType}"
+    result
+
+
+  #===========================================================================
   # Items
   #===========================================================================
   get = (name, key, options={}) ->
@@ -115,7 +163,10 @@ DynamoDB = (_AWS) ->
     p = {TableName: name, Key: key}
     await db.deleteItem merge p, options
 
-
+  #===========================================================================
+  # Queries and Scans against Tables and Indexes
+  #===========================================================================
+  _delimiter = "<###SUNDOGDYNAMODB###>"
   _setupCurrent = ->
     Items: []
     Count: 0
@@ -132,13 +183,66 @@ DynamoDB = (_AWS) ->
     current.ConsumedCapacity = current.ConsumedCapacity.push ConsumedCapacity
     current
 
+  _parseName = (name) ->
+    throw new Error "Must provide table name." if !name
+    parts = name.split ":"
+    if parts.length > 1
+      {tableName: parts[0], indexName: parts[1]}
+    else
+      {tableName: name, indexName: false}
+
+  _parseConditional = (ex, count=0) ->
+    return {result:false, values:false, count} if !ex
+    Values = {}
+    re = new RegExp "#{_delimiter}.+?#{_delimiter}", "g"
+
+    result = ex.replace re, (match) ->
+      [, obj] = match.split _delimiter
+      placeholder = ":param#{count}"
+      count++
+      Values[placeholder] = JSON.parse obj
+      placeholder # Return placeholder to the expression we are processing.
+
+    {result, values:Values, count}
+
+  _parseQuery = (options, name, keyEx, filterEx) ->
+    {tableName, indexName} = _parseName name
+    {result:key, values:keyValues, count} = _parseConditional keyEx
+    {result:filter, values:filterValues} = _parseConditional filterEx, count
+
+    out = options
+    out.TableName = tableName
+    out.IndexName = indexName if indexName
+    out.KeyConditionExpression = key if key
+    out.FilterExpression = filter if filter
+    if keyValues || filterValues
+      out.ExpressionAttributeValues =
+        merge (keyValues || {}), (filterValues || {})
+    out
+
+  # qv produces query strings with delimited values SunDog can parse.
+  _qv = (o) ->
+    delimit = (s) -> "#{_delimiter}#{s}#{_delimiter}"
+    # Determine if this is a DynamoDB value, and whether is anyonymous or named.
+    if o.name == "anyonymousDynamodbValue"
+      delimit JSON.stringify o
+    else if o.name == "namedDynamodbValue"
+      delimit JSON.stringify first values o
+    else
+      throw new Error "Unable to create stringified query value for unrecongied object #{JSON.stringify o}"
+
+  qv = Method.create()
+  Method.define qv, isFunction, (f) -> (x) -> _qv f x
+  Method.define qv, isObject, (o) -> _qv o
 
   query = (name, keyEx, filterEx, options={}, current) ->
     current = _setupCurrent() if !current
+    if !current.options
+      current.options = options = _parseQuery options, name, keyEx, filterEx
+    else
+      {options} = current
 
-    p = {TableName: name}
-    p.KeyConditionExpression = keyEx if keyEx
-    p.FilterExpression = filterEx if filterEx
+    p = {}
     p.ExclusiveStartKey = current.LastEvaluatedKey if current.LastEvaluatedKey
     results = await db.query merge p, options
 
@@ -150,9 +254,12 @@ DynamoDB = (_AWS) ->
 
   scan = (name, filterEx, options={}, current) ->
     current = _setupCurrent() if !current
+    if !current.options
+      current.options = options = _parseQuery options, name, false, filterEx
+    else
+      {options} = current
 
-    p = {TableName: name}
-    p.FilterExpression = filterEx if filterEx
+    p = {}
     p.ExclusiveStartKey = current.LastEvaluatedKey if current.LastEvaluatedKey
     results = await db.scan merge p, options
 
@@ -162,76 +269,8 @@ DynamoDB = (_AWS) ->
     else
       await scan name, filterEx, options, current
 
-  #===========================================================================
-  # Type Helpers
-  #===========================================================================
-  # DynamoDB locks its data within a type system and expects data to be input
-  # that way.  These helpers write and parse that type system.
-  _transform = (x, f) ->
-    out = {}
-    if isObject x
-      out[k] = f v for k, v of x
-      out
-    else
-      f x
 
-  toS = (x) ->
-    f = (s) -> S: s.toString()
-    _transform x, f
 
-  toN = (x) ->
-    f = (n) -> N: n.toString()
-    _transform x, f
-
-  toB = (x) ->
-    f = (b) -> B: b.toString("base64")
-    _transform x, f
-
-  toSS = (x) ->
-    f = (a) -> SS: (i.toString() for i in a)
-    _transform x, f
-
-  toNS = (x) ->
-    f = (a) -> NS: (i.toString() for i in a)
-    _transform x, f
-
-  toBS = (x) ->
-    f = (a) -> BS: (i.toString("base64") for i in a)
-    _transform x, f
-
-  toM = (x) ->
-    f = (m) -> M: m
-    _transform x, f
-
-  toL = (x) ->
-    f = (l) -> L: l
-    _transform x, f
-
-  toNull = (x) ->
-    f = (n) -> NULL: n
-    _transform x, f
-
-  toBool = (x) ->
-    f = (b) -> BOOL: b
-    _transform x, f
-
-  parse = (attributes) ->
-    result = {}
-    for name, typeObj of attributes
-      dataType = first keys typeObj
-      v = first values typeObj
-      result[name] = switch dataType
-        when "S", "SS", "L", "BOOL" then v
-        when "N" then new Number v
-        when "B" then Buffer.from v, "base64"
-        when "NS" then (new Number i for i in v)
-        when "BS" then (Buffer.from i, "base64" for i in v)
-        when "NULL" then !v
-        when "M" then parse v
-        else
-          throw new Error "Unable to parse object for DynamoDB attribute type. #{dataType}"
-    result
-
-  {tableGet, tableCreate, tableUpdate, tableDel, tableWaitForReady, tableWaitForDeleted, tableEmpty, get, put, update, del, query, scan, toS, toN, toB, toSS, toNS, toBS, toM, toL, toNull, toBool, parse, merge}
+  {tableGet, tableCreate, tableUpdate, tableDel, tableWaitForReady, tableWaitForDeleted, tableEmpty, to, parse, merge, get, put, update, del, qv, query, scan}
 
 export default DynamoDB
