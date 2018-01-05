@@ -4,11 +4,15 @@ import Pillar2 from "./primitives"
 import Pillar3 from "./helpers"
 
 start = (engine) ->
-  #engine = await Engine region
-  _AWS = Pillar1 engine
-  AWS = Pillar2 _AWS
-  Helpers = Pillar3 AWS
-
-  {_AWS, AWS, Helpers}
+  Object.defineProperties {},
+    _AWS:
+      enumerable: true
+      get: -> Pillar1 engine
+    AWS:
+      enumerable: true
+      get: -> Pillar2 @_AWS
+    Helpers:
+      enumerable: true
+      get: -> Pillar3 @AWS
 
 export default start

@@ -8,8 +8,8 @@ import mime from "mime"
 
 import {notFound} from "./utils"
 
-S3 = (_AWS) ->
-  {S3: s3} = _AWS
+s3Primative = (_AWS) ->
+  s3 = _AWS.S3
 
   bucketExists = (name) ->
     try
@@ -94,4 +94,4 @@ S3 = (_AWS) ->
   {bucketExists, exists, bucketTouch, put, get, del, bucketDel, list, bucketEmpty}
 
 
-export default S3
+export default s3Primative
