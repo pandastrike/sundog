@@ -1,17 +1,13 @@
 {
   "name": "sundog",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Wrapper for the JavaScript AWS SDK, powered by Fairmont to give it a functional boost",
-  "main": "lib/index.js",
+  "main": "build/npm/lib/index.js",
   "files": [
-    "lib/",
+    "build/npm/lib",
     "LICENSE"
   ],
-  "scripts": {
-    "prepare": "node_modules/.bin/coffee --compile --transpile --inline-map --output lib/ src/",
-    "postpublish": "(json -f package.json version | xargs -I version git tag -am version version) && git push --tags",
-    "test": "coffee --transpile --inline-map test/"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pandastrike/sundog.git"
@@ -42,11 +38,9 @@
     "mime": "^2.0.3"
   },
   "devDependencies": {
-    "babel-core": "6.26.0",
-    "babel-polyfill": "^6.26.0",
-    "babel-preset-env": "1.6.1",
     "coffeescript": "2.1.0",
-    "json": "^9.0.6",
+    "fairmont-build-tools": "1.0.2",
+    "gulp": "github:gulpjs/gulp#4.0",
     "source-map-support": "^0.5.0"
   }
 }
