@@ -13,12 +13,12 @@ var cognitoPrimative;
 
 cognitoPrimative = function (_AWS) {
   var cog, poolGet, poolList;
-  cog = _AWS.Cognito;
+  cog = _AWS.CognitoIdentityServiceProvider;
   poolList = (() => {
-    var _ref = _asyncToGenerator(function* (current, token) {
+    var _ref = _asyncToGenerator(function* (current = [], token) {
       var NextToken, UserPools, params;
       params = {
-        MaxResults: 100
+        MaxResults: 60
       };
       if (token) {
         params.NextToken = token;
@@ -32,14 +32,14 @@ cognitoPrimative = function (_AWS) {
       }
     });
 
-    return function poolList(_x, _x2) {
+    return function poolList() {
       return _ref.apply(this, arguments);
     };
   })();
   poolGet = (() => {
     var _ref2 = _asyncToGenerator(function* (name) {
       var Id;
-      ({ Id } = collect(where({
+      ({ Id } = (0, _fairmont.collect)((0, _fairmont.where)({
         Name: name
       }, (yield poolList()))));
       if (!Id) {
@@ -51,7 +51,7 @@ cognitoPrimative = function (_AWS) {
       }
     });
 
-    return function poolGet(_x3) {
+    return function poolGet(_x) {
       return _ref2.apply(this, arguments);
     };
   })();

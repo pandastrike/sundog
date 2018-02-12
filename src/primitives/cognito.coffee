@@ -1,12 +1,12 @@
 # Primitives for the service Cognito.  The base entity is the "user".  Methods that act on other entities, like pools or clients are prefixed as such.
 
-import {cat} from "fairmont"
+import {cat, collect, where} from "fairmont"
 
 cognitoPrimative = (_AWS) ->
-  cog = _AWS.Cognito
+  cog = _AWS.CognitoIdentityServiceProvider
 
-  poolList = (current, token) ->
-    params = MaxResults: 100
+  poolList = (current=[], token) ->
+    params = MaxResults: 60
     params.NextToken = token if token
     {UserPools, NextToken} = await cog.listUserPools params
     current = cat current, UserPools
