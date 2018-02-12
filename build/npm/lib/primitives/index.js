@@ -4,6 +4,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _cognito = require("./cognito");
+
+var _cognito2 = _interopRequireDefault(_cognito);
+
 var _dynamodb = require("./dynamodb");
 
 var _dynamodb2 = _interopRequireDefault(_dynamodb);
@@ -18,6 +22,12 @@ var Primitives;
 
 Primitives = function (_AWS) {
   return Object.defineProperties({}, {
+    Cognito: {
+      enumerable: true,
+      get: function () {
+        return (0, _cognito2.default)(_AWS);
+      }
+    },
     DynamoDB: {
       enumerable: true,
       get: function () {
