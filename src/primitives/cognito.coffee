@@ -16,11 +16,12 @@ cognitoPrimative = (_AWS) ->
       current
 
   poolGet = (name) ->
-    {Id} = collect where Name: name, await poolList()
-    if !Id
+    [pool] = collect where Name: name, await poolList()
+    if !pool
       return false
     else
-      await cog.describeUserPool UserPoolId: Id
+      {UserPool} = await cog.describeUserPool UserPoolId: pool.Id
+      UserPool
 
   {poolList, poolGet}
 

@@ -38,16 +38,17 @@ cognitoPrimative = function (_AWS) {
   })();
   poolGet = (() => {
     var _ref2 = _asyncToGenerator(function* (name) {
-      var Id;
-      ({ Id } = (0, _fairmont.collect)((0, _fairmont.where)({
+      var UserPool, pool;
+      [pool] = (0, _fairmont.collect)((0, _fairmont.where)({
         Name: name
-      }, (yield poolList()))));
-      if (!Id) {
+      }, (yield poolList())));
+      if (!pool) {
         return false;
       } else {
-        return yield cog.describeUserPool({
-          UserPoolId: Id
-        });
+        ({ UserPool } = yield cog.describeUserPool({
+          UserPoolId: pool.Id
+        }));
+        return UserPool;
       }
     });
 
