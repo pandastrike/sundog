@@ -15,15 +15,85 @@ cognitoPrimative = (_AWS) ->
     else
       current
 
-  poolGet = (name) ->
+  poolGetHead = (name) ->
     [pool] = collect where Name: name, await poolList()
-    if !pool
+    if pool then pool else false
+
+  poolGet = (name) ->
+    {Id} = await poolGetHead name
+    if !Id
       return false
     else
-      {UserPool} = await cog.describeUserPool UserPoolId: pool.Id
+      {UserPool} = await cog.describeUserPool UserPoolId: Id
       UserPool
 
-  {poolList, poolGet}
+  clientList = (UserPoolId, current=[], token) ->
+    params = {
+      UserPoolId
+      MaxResults: 60
+    }
+    params.NextToken = token if token
+    {UserPoolClients, NextToken} = await cog.listUserPoolClients params
+    current = cat current, UserPoolClients
+    if NextToken
+      await clientList UserPoolId, current, NextToken
+    else
+      current
+
+  clientGetHead = (UserPoolOverload, ClientName) ->
+    if ClientName
+      Id = UserPoolOverload
+    else
+      ClientName = UserPoolName = UserPoolOverload
+      {Id} = await poolGetHead UserPoolName
+
+    if !Id
+      return false
+    else
+      [client] = collect where {ClientName}, await clientList(Id)
+      if client then client else false
+
+  clientGet = (userPoolName, clientName) ->
+    clientName ||= userPoolName
+    {UserPoolId, ClientId} = await clientGetHead userPoolName, clientName
+    if ClientId
+      {UserPoolClient} = await cog.describeUserPoolClient {UserPoolId, ClientId}
+      UserPoolClient
+    else
+      false
+
+  frictionless = do ->
+
+    assignRequired = (config) ->
+      [{
+        Name: "email"
+        Value: config.email || ""
+        },{
+        Name: "phone_number"
+        Value: config.phone_number || ""
+      }]
+
+    assignOptional = (config, attributes) ->
+      avoid = ["username", "email", "phone_number"]
+      attributes.push {Name: n, Value: v} for n, v of config when n not in avoid
+      attributes
+
+    assignAttributes = (config) -> assignOptional config, assignRequired config
+
+    create = (id, attributes) ->
+      params =
+        UserPoolId: id
+        Username: attributes.username
+        UserAttributes: assignAttributes attributes
+
+      params.DesiredDeliveryMediums = []
+      params.DesiredDeliveryMediums.push "SMS" if attributes.phone_number
+      params.DesiredDeliveryMediums.push "EMAIL" if attributes.email
+      await cog.adminCreateUser params
+
+    {create}
+
+  {frictionless, poolList, poolGetHead, poolGet, clientList, clientGetHead, clientGet}
 
 
   # exists = curry (name, key) ->
