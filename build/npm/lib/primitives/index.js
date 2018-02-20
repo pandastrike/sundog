@@ -12,6 +12,10 @@ var _dynamodb = require("./dynamodb");
 
 var _dynamodb2 = _interopRequireDefault(_dynamodb);
 
+var _kms = require("./kms");
+
+var _kms2 = _interopRequireDefault(_kms);
+
 var _s = require("./s3");
 
 var _s2 = _interopRequireDefault(_s);
@@ -36,6 +40,12 @@ Primitives = function (_AWS) {
       enumerable: true,
       get: function () {
         return (0, _dynamodb2.default)(_AWS);
+      }
+    },
+    KMS: {
+      enumerable: true,
+      get: function () {
+        return (0, _kms2.default)(_AWS);
       }
     },
     S3: {
