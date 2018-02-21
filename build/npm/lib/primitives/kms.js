@@ -124,6 +124,8 @@ cognitoPrimative = function (_AWS) {
         NumberOfBytes: size
       }));
       switch (encoding) {
+        case "buffer":
+          return Plaintext;
         case "ascii":
         case "hex":
         case "utf8":

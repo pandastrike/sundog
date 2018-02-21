@@ -54,6 +54,8 @@ cognitoPrimative = (_AWS) ->
   randomKey = (size, encoding="hex") ->
     {Plaintext} = await kms.generateRandom {NumberOfBytes: size}
     switch encoding
+      when "buffer"
+        Plaintext
       when "ascii", "hex", "utf8", "utf16le", "ucs2", "latin1", "binary", "hex"
         Plaintext.toString encoding
       when "base64"
