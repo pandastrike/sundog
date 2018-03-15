@@ -53,7 +53,6 @@ sesPrimative = function (_AWS) {
         Message: { Subject, Body }
       };
       params = (0, _fairmont.merge)(params, opts);
-      console.log(params);
       return yield ses.sendEmail(params);
     });
 
