@@ -235,7 +235,7 @@ dynamodbPrimative = (_AWS) ->
     {result, values} = _parseConditional updateEx
     options.UpdateExpression = result if result
     options.ExpressionAttributeValues = values if values
-    await db.putItem merge p, options
+    await db.updateItem merge p, options
 
   query = (name, keyEx, filterEx, options={}, current) ->
     current = _setupCurrent() if !current

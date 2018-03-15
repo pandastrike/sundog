@@ -20,6 +20,14 @@ var _s = require("./s3");
 
 var _s2 = _interopRequireDefault(_s);
 
+var _ses = require("./ses");
+
+var _ses2 = _interopRequireDefault(_ses);
+
+var _sns = require("./sns");
+
+var _sns2 = _interopRequireDefault(_sns);
+
 var _sts = require("./sts");
 
 var _sts2 = _interopRequireDefault(_sts);
@@ -52,6 +60,18 @@ Primitives = function (_AWS) {
       enumerable: true,
       get: function () {
         return (0, _s2.default)(_AWS);
+      }
+    },
+    SES: {
+      enumerable: true,
+      get: function () {
+        return (0, _ses2.default)(_AWS);
+      }
+    },
+    SNS: {
+      enumerable: true,
+      get: function () {
+        return (0, _sns2.default)(_AWS);
       }
     },
     STS: {

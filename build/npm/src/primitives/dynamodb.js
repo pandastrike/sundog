@@ -536,7 +536,7 @@ dynamodbPrimative = function (_AWS) {
       if (_fairmont.values) {
         options.ExpressionAttributeValues = _fairmont.values;
       }
-      return yield db.putItem((0, _fairmont.merge)(p, options));
+      return yield db.updateItem((0, _fairmont.merge)(p, options));
     });
 
     return function update(_x22, _x23, _x24) {
