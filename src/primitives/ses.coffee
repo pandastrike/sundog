@@ -1,7 +1,7 @@
 # Primitives for the service SES (simple email service).
 import {isObject, isArray, merge} from "fairmont"
 
-sesPrimative = (_AWS) ->
+sesPrimitive = (_AWS) ->
   ses = _AWS.SES
 
   sendEmail = (src, dest, subject, body, format="text", opts={}) ->
@@ -33,4 +33,4 @@ sesPrimative = (_AWS) ->
   {sendEmail}
 
 
-export default sesPrimative
+export default sesPrimitive

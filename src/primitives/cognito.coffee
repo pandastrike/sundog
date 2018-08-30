@@ -2,7 +2,7 @@
 
 import {cat, collect, where} from "fairmont"
 
-cognitoPrimative = (_AWS) ->
+cognitoPrimitive = (_AWS) ->
   cog = _AWS.CognitoIdentityServiceProvider
 
   poolList = (current=[], token) ->
@@ -66,4 +66,4 @@ cognitoPrimative = (_AWS) ->
   {poolList, poolHead, poolGet, clientList, clientHead, clientGet}
 
 
-export default cognitoPrimative
+export default cognitoPrimitive

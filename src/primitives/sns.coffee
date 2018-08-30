@@ -1,6 +1,6 @@
 # Primitives for the service SNS (simple notificaiton service).
 
-snsPrimative = (_AWS) ->
+snsPrimitive = (_AWS) ->
   sns = _AWS.SNS
 
   sendSMS = (PhoneNumber, Message) ->
@@ -8,4 +8,4 @@ snsPrimative = (_AWS) ->
 
   {sendSMS}
 
-export default snsPrimative
+export default snsPrimitive

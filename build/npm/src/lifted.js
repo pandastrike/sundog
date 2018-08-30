@@ -30,7 +30,13 @@ liftAll = function (AWS) {
   for (k in AWS) {
     v = AWS[k];
     if ((0, _fairmont.isFunction)(v) && ((ref = v.__super__) != null ? ref.name : void 0) === "Service" && indexOf.call(avoidedServices, k) < 0) {
-      services[k] = liftService(new v());
+      if (k === "S3") {
+        services[k] = liftService(new v({
+          signatureVersion: 'v4'
+        }));
+      } else {
+        services[k] = liftService(new v());
+      }
     }
   }
   return services;

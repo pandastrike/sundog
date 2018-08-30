@@ -6,7 +6,7 @@
 import {merge, sleep, empty, cat, collect, project, pick, curry, difference, first, keys, values, Method, isFunction, isObject} from "fairmont"
 import {notFound} from "./utils"
 
-dynamodbPrimative = (_AWS) ->
+dynamodbPrimitive = (_AWS) ->
   {DynamoDB: db} = _AWS
 
   #===========================================================================
@@ -275,4 +275,4 @@ dynamodbPrimative = (_AWS) ->
 
   {tableGet, tableCreate, tableUpdate, tableDel, tableWaitForReady, tableWaitForDeleted, tableEmpty, keysFilter, to, parse, merge, get, put, del, qv, update, query, scan}
 
-export default dynamodbPrimative
+export default dynamodbPrimitive

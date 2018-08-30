@@ -4,7 +4,7 @@
 import {cat, merge} from "fairmont"
 import {notFound} from "./utils"
 
-cognitoPrimative = (_AWS) ->
+cognitoPrimitive = (_AWS) ->
   kms = _AWS.KMS
 
   get = (id, tokens) ->
@@ -94,4 +94,4 @@ cognitoPrimative = (_AWS) ->
   {get, create, scheduleDelete, addAlias, removeAlias, randomKey, decrypt, encrypt, reEncrypt}
 
 
-export default cognitoPrimative
+export default cognitoPrimitive

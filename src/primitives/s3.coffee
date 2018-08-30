@@ -3,12 +3,12 @@
 # prefixed "bucket*", whereas object methods will have no prefix.
 
 import {createReadStream} from "fs"
-import {curry, sleep, read, md5, cat} from "fairmont"
+import {curry, sleep, read, md5, cat, merge} from "fairmont"
 import mime from "mime"
 
 import {notFound} from "./utils"
 
-s3Primative = (_AWS) ->
+s3Primitive = (_AWS) ->
   s3 = _AWS.S3
 
   bucketExists = (name) ->
@@ -30,7 +30,7 @@ s3Primative = (_AWS) ->
     await s3.createBucket {Bucket: name}
     await sleep 15000 # race condition with S3 API.  Wait to be available.
 
-  put = curry (name, key, data, filetype) ->
+  put = curry (Bucket, Key, data, filetype) ->
     if filetype
       # here, data is stringified data.
       content = body = new Buffer data
@@ -44,14 +44,12 @@ s3Primative = (_AWS) ->
         else
           await read data, "buffer"
 
-    params =
-      Bucket: name
-      Key: key
+    await s3.putObject {
+      Bucket, Key,
       ContentType: filetype
       ContentMD5: new Buffer(md5(content), "hex").toString('base64')
       Body: body
-
-    await s3.putObject params
+    }
 
   get = curry (name, key, encoding="utf8") ->
     try
@@ -90,8 +88,52 @@ s3Primative = (_AWS) ->
     items = await list name
     await del name, i.Key for i in items
 
+  bucketPutACL = (parameters) ->
+    await s3.putBucketAcl parameters
 
-  {bucketExists, exists, bucketTouch, put, get, del, bucketDel, list, bucketEmpty}
+  #####
+  # Multipart upload functions
+  #####
+  multipartStart = (Bucket, Key, ContentType, options={}) ->
+    await s3.createMultipartUpload merge {Bucket, Key, ContentType}, options
+
+  multipartAbort = (Bucket, Key, UploadId) ->
+    await s3.abortMultipartUpload {Bucket, Key, UploadId}
+
+  multipartComplete = (Bucket, Key, UploadId, MultipartUpload) ->
+    await s3.completeMultipartUpload {Bucket, Key, UploadId, MultipartUpload}
+
+  multipartPut = (Bucket, Key, UploadId, PartNumber, part, filetype) ->
+    if filetype
+      # here, data is stringified data.
+      content = body = new Buffer part
+    else
+      # here, data is a path to file.
+      filetype = mime.lookup part
+      body = createReadStream part
+      content =
+        if "text" in filetype
+          await read part
+        else
+          await read part, "buffer"
+
+    await s3.uploadPart {
+      Bucket, Key, UploadId, PartNumber,
+      ContentType: filetype
+      ContentMD5: new Buffer(md5(content), "hex").toString('base64')
+      Body: body
+    }
 
 
-export default s3Primative
+  # Signing a URL grants the bearer the ability to perform the given action against an S3 object, even if they are not you.
+  sign = (action, parameters) ->
+    await s3.getSignedUrl action, parameters
+
+  signPost = (parameters) ->
+    await s3.createPresignedPost parameters
+
+
+  {bucketExists, exists, bucketTouch, put, get, del, bucketDel, list, bucketEmpty, multipartStart, multipartAbort, multipartPut, multipartComplete, sign, signPost}
+
+
+export default s3Primitive

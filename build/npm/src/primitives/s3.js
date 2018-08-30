@@ -25,7 +25,7 @@ var s3Primative,
     indexOf = [].indexOf;
 
 s3Primative = function (_AWS) {
-  var bucketDel, bucketEmpty, bucketExists, bucketTouch, del, exists, get, list, put, s3;
+  var bucketDel, bucketEmpty, bucketExists, bucketTouch, del, exists, get, list, multipartAbort, multipartComplete, multipartPut, multipartStart, put, s3, sign, signPost;
   s3 = _AWS.S3;
   bucketExists = (() => {
     var _ref = _asyncToGenerator(function* (name) {
@@ -80,8 +80,8 @@ s3Primative = function (_AWS) {
     };
   })();
   put = (0, _fairmont.curry)((() => {
-    var _ref4 = _asyncToGenerator(function* (name, key, data, filetype) {
-      var body, content, params;
+    var _ref4 = _asyncToGenerator(function* (Bucket, Key, data, filetype) {
+      var body, content;
       if (filetype) {
         // here, data is stringified data.
         content = body = new Buffer(data);
@@ -91,14 +91,13 @@ s3Primative = function (_AWS) {
         body = (0, _fs.createReadStream)(data);
         content = indexOf.call(_mime2.default.lookup(data), "text") >= 0 ? yield (0, _fairmont.read)(data) : yield (0, _fairmont.read)(data, "buffer");
       }
-      params = {
-        Bucket: name,
-        Key: key,
+      return yield s3.putObject({
+        Bucket,
+        Key,
         ContentType: filetype,
         ContentMD5: new Buffer((0, _fairmont.md5)(content), "hex").toString('base64'),
         Body: body
-      };
-      return yield s3.putObject(params);
+      });
     });
 
     return function (_x5, _x6, _x7, _x8) {
@@ -201,7 +200,83 @@ s3Primative = function (_AWS) {
       return _ref9.apply(this, arguments);
     };
   })();
-  return { bucketExists, exists, bucketTouch, put, get, del, bucketDel, list, bucketEmpty };
+  //####
+  // Multipart upload functions
+  //####
+  multipartStart = (() => {
+    var _ref10 = _asyncToGenerator(function* (Bucket, Key, ContentType, options = {}) {
+      return yield s3.createMultipartUpload((0, _fairmont.merge)({ Bucket, Key, ContentType }, options));
+    });
+
+    return function multipartStart(_x16, _x17, _x18) {
+      return _ref10.apply(this, arguments);
+    };
+  })();
+  multipartAbort = (() => {
+    var _ref11 = _asyncToGenerator(function* (Bucket, Key, UploadId) {
+      return yield s3.abortMultipartUpload({ Bucket, Key, UploadId });
+    });
+
+    return function multipartAbort(_x19, _x20, _x21) {
+      return _ref11.apply(this, arguments);
+    };
+  })();
+  multipartComplete = (() => {
+    var _ref12 = _asyncToGenerator(function* (Bucket, Key, UploadId, MultipartUpload) {
+      return yield s3.completeMultipartUpload({ Bucket, Key, UploadId, MultipartUpload });
+    });
+
+    return function multipartComplete(_x22, _x23, _x24, _x25) {
+      return _ref12.apply(this, arguments);
+    };
+  })();
+  multipartPut = (() => {
+    var _ref13 = _asyncToGenerator(function* (Bucket, Key, UploadId, PartNumber, part, filetype) {
+      var body, content;
+      if (filetype) {
+        // here, data is stringified data.
+        content = body = new Buffer(part);
+      } else {
+        // here, data is a path to file.
+        filetype = _mime2.default.lookup(part);
+        body = (0, _fs.createReadStream)(part);
+        content = indexOf.call(filetype, "text") >= 0 ? yield (0, _fairmont.read)(part) : yield (0, _fairmont.read)(part, "buffer");
+      }
+      return yield s3.uploadPart({
+        Bucket,
+        Key,
+        UploadId,
+        PartNumber,
+        ContentType: filetype,
+        ContentMD5: new Buffer((0, _fairmont.md5)(content), "hex").toString('base64'),
+        Body: body
+      });
+    });
+
+    return function multipartPut(_x26, _x27, _x28, _x29, _x30, _x31) {
+      return _ref13.apply(this, arguments);
+    };
+  })();
+  // Signing a URL grants the bearer the ability to perform the given action against an S3 object, even if they are not you.
+  sign = (() => {
+    var _ref14 = _asyncToGenerator(function* (action, parameters) {
+      return yield s3.getSignedUrl(action, parameters);
+    });
+
+    return function sign(_x32, _x33) {
+      return _ref14.apply(this, arguments);
+    };
+  })();
+  signPost = (() => {
+    var _ref15 = _asyncToGenerator(function* (parameters) {
+      return yield s3.createPresignedPost(parameters);
+    });
+
+    return function signPost(_x34) {
+      return _ref15.apply(this, arguments);
+    };
+  })();
+  return { bucketExists, exists, bucketTouch, put, get, del, bucketDel, list, bucketEmpty, multipartStart, multipartAbort, multipartPut, multipartComplete, sign, signPost };
 };
 
 exports.default = s3Primative;

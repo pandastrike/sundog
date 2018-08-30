@@ -1,5 +1,5 @@
 #import Engine from "./engine"
-import Pillar1 from "./lifted"
+import Pillar1 from "./lift"
 import Pillar2 from "./primitives"
 import Pillar3 from "./helpers"
 
