@@ -1,19 +1,15 @@
-import {isFunction} from "fairmont"
-import {liftService} from "./base"
+import {isFunction, lift, bind} from "fairmont"
 
-avoidedServices = ["CloudSearchDomain", "IotData"]
+liftService = (s) ->
+  service = {}
+  for k, v of s
+    service[k] = if isFunction v then lift bind v, s else v
+  service
 
-liftAll = (AWS) ->
-  services = {}
-  for k, v of AWS
-    if (isFunction v) && v.__super__?.name == "Service" && (k not in avoidedServices)
+applyConfiguration = (configuration, service) ->
+  if configuration
+    liftService new service configuration
+  else
+    liftService new service()
 
-      if k == "S3"
-        services[k] = liftService new v signatureVersion: 'v4'
-      else
-        services[k] = liftService new v()
-  services
-
-_AWS = (AWS) -> liftAll AWS
-
-export default _AWS
+export {liftService, applyConfiguration}

@@ -30,4 +30,4 @@ urlPrimitive = ->
 
   {fullyQualify, regularlyQualify, root}
 
-export default ulrPrimitive
+export default urlPrimitive

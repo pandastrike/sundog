@@ -1,59 +1,61 @@
 import {collect, select, project, where, sleep, first} from "fairmont"
+import {applyConfiguration} from "../../lift"
 
-eniPrimitive = (_AWS) ->
-  ec2 = _AWS.EC2
+eniPrimitive = (SDK) ->
+  (configuration) ->
+    ec2 = applyConfiguration configuration, SDK.EC2
 
-  list = (subnetIDs) ->
-    {NetworkInterfaces} = await ec2.describeNetworkInterfaces
-      Filters: [
-        Name: "subnet-id"
-        Values: subnetIDs
-      ]
-    NetworkInterfaces
-
-  get = (id) ->
-    try
+    list = (subnetIDs) ->
       {NetworkInterfaces} = await ec2.describeNetworkInterfaces
-        NetworkInterfaceIds: [ id ]
-      first NetworkInterfaces
-    catch e
-      false
+        Filters: [
+          Name: "subnet-id"
+          Values: subnetIDs
+        ]
+      NetworkInterfaces
 
-  waitFor = (status) ->
-    (id) ->
-      while true
-        await sleep 10000
-        subnet = await get id
-        if subnet.Status == status
-          return
+    get = (id) ->
+      try
+        {NetworkInterfaces} = await ec2.describeNetworkInterfaces
+          NetworkInterfaceIds: [ id ]
+        first NetworkInterfaces
+      catch e
+        false
 
-  waitForAvailable = waitFor "available"
-  waitForInUse = waitFor "in-use"
+    waitFor = (status) ->
+      (id) ->
+        while true
+          await sleep 10000
+          subnet = await get id
+          if subnet.Status == status
+            return
 
-  detach = (id, attachmentID) ->
-    await ec2.detachNetworkInterface
-      AttachmentId: attachmentID
-      Force: true
+    waitForAvailable = waitFor "available"
+    waitForInUse = waitFor "in-use"
 
-    await waitForAvailable id
+    detach = (id, attachmentID) ->
+      await ec2.detachNetworkInterface
+        AttachmentId: attachmentID
+        Force: true
 
-  Delete = (id) ->
-    await ec2.deleteNetworkInterface
-      NetworkInterfaceId: id
+      await waitForAvailable id
 
-  purge = (subnetIDs, test) ->
-    # Collect any ENIs used by this stacks's Lambdas
-    ENIs = await list subnetIDs
-    ENIs = collect select test, ENIs
+    Delete = (id) ->
+      await ec2.deleteNetworkInterface
+        NetworkInterfaceId: id
 
-    # Detach any attached ENIs
-    attachedENIs = collect where Status: "in-use", ENIs
-    await Promise.all (detach e.NetworkInterfaceId, e.Attachment.AttachmentId for e in attachedENIs)
+    purge = (subnetIDs, test) ->
+      # Collect any ENIs that meet your test specs.
+      ENIs = await list subnetIDs
+      ENIs = collect select test, ENIs
 
-    # Destroy all the ENIs
-    await Promise.all (Delete e.NetworkInterfaceId for e in ENIs)
+      # Detach any attached ENIs
+      attachedENIs = collect where Status: "in-use", ENIs
+      await Promise.all (detach e.NetworkInterfaceId, e.Attachment.AttachmentId for e in attachedENIs)
+
+      # Destroy all the ENIs
+      await Promise.all (Delete e.NetworkInterfaceId for e in ENIs)
 
 
-  {purge}
+    {purge}
 
 export default eniPrimitive

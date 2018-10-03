@@ -7,133 +7,135 @@ import {curry, sleep, read, md5, cat, merge} from "fairmont"
 import mime from "mime"
 
 import {notFound} from "./utils"
+import {applyConfiguration} from "../lift"
 
-s3Primitive = (_AWS) ->
-  s3 = _AWS.S3
+s3Primitive = (SDK) ->
+  (configuration) ->
+    s3 = applyConfiguration configuration, SDK.S3
 
-  bucketExists = (name) ->
-    try
-      await s3.headBucket Bucket: name
-      true
-    catch e
-      notFound e
+    bucketExists = (name) ->
+      try
+        await s3.headBucket Bucket: name
+        true
+      catch e
+        notFound e
 
-  exists = curry (name, key) ->
-    try
-      await s3.headObject {Bucket: name, Key: key}
-      true
-    catch e
-      notFound e
+    exists = curry (name, key) ->
+      try
+        await s3.headObject {Bucket: name, Key: key}
+        true
+      catch e
+        notFound e
 
-  bucketTouch = (name) ->
-    return true if await bucketExists name
-    await s3.createBucket {Bucket: name}
-    await sleep 15000 # race condition with S3 API.  Wait to be available.
+    bucketTouch = (name) ->
+      return true if await bucketExists name
+      await s3.createBucket {Bucket: name}
+      await sleep 15000 # race condition with S3 API.  Wait to be available.
 
-  put = curry (Bucket, Key, data, filetype) ->
-    if filetype
-      # here, data is stringified data.
-      content = body = new Buffer data
-    else
-      # here, data is a path to file.
-      filetype = mime.lookup data
-      body = createReadStream data
-      content =
-        if "text" in mime.lookup(data)
-          await read data
-        else
-          await read data, "buffer"
+    put = curry (Bucket, Key, data, filetype) ->
+      if filetype
+        # here, data is stringified data.
+        content = body = new Buffer data
+      else
+        # here, data is a path to file.
+        filetype = mime.getType data
+        body = createReadStream data
+        content =
+          if "text" in mime.getType(data)
+            await read data
+          else
+            await read data, "buffer"
 
-    await s3.putObject {
-      Bucket, Key,
-      ContentType: filetype
-      ContentMD5: new Buffer(md5(content), "hex").toString('base64')
-      Body: body
-    }
+      await s3.putObject {
+        Bucket, Key,
+        ContentType: filetype
+        ContentMD5: new Buffer(md5(content), "hex").toString('base64')
+        Body: body
+      }
 
-  get = curry (name, key, encoding="utf8") ->
-    try
-      {Body} = await s3.getObject {Bucket: name, Key: key}
-      Body.toString encoding
-    catch e
-      notFound e
+    get = curry (name, key, encoding="utf8") ->
+      try
+        {Body} = await s3.getObject {Bucket: name, Key: key}
+        Body.toString encoding
+      catch e
+        notFound e
 
-  del = curry (name, key) ->
-    try
-      await s3.deleteObject {Bucket: name, Key: key}
-    catch e
-      notFound e
+    del = curry (name, key) ->
+      try
+        await s3.deleteObject {Bucket: name, Key: key}
+      catch e
+        notFound e
 
-  bucketDel = (name) ->
-    try
-      await s3.deleteBucket Bucket: name
-    catch e
-      notFound e
+    bucketDel = (name) ->
+      try
+        await s3.deleteBucket Bucket: name
+      catch e
+        notFound e
 
-  list = curry (name, items=[], marker) ->
-    p = {Bucket: name, MaxKeys: 1000}
-    p.ContinuationToken = marker if marker
+    list = curry (name, items=[], marker) ->
+      p = {Bucket: name, MaxKeys: 1000}
+      p.ContinuationToken = marker if marker
 
-    {IsTruncated, Contents, NextContinuationToken} = await s3.listObjectsV2 p
-    if IsTruncated
-      items = cat items, Contents
-      await list name, items, NextContinuationToken
-    else
-      cat items, Contents
+      {IsTruncated, Contents, NextContinuationToken} = await s3.listObjectsV2 p
+      if IsTruncated
+        items = cat items, Contents
+        await list name, items, NextContinuationToken
+      else
+        cat items, Contents
 
-  # TODO: make this more efficient by throttling to X connections at once. AWS
-  # only supports N requests per second from an account, and I don't want this
-  # to violate that limit, but we can do better than one at a time.
-  bucketEmpty = (name) ->
-    items = await list name
-    await del name, i.Key for i in items
+    # TODO: make this more efficient by throttling to X connections at once. AWS
+    # only supports N requests per second from an account, and I don't want this
+    # to violate that limit, but we can do better than one at a time.
+    bucketEmpty = (name) ->
+      items = await list name
+      await del name, i.Key for i in items
 
-  bucketPutACL = (parameters) ->
-    await s3.putBucketAcl parameters
+    bucketPutACL = (parameters) ->
+      await s3.putBucketAcl parameters
 
-  #####
-  # Multipart upload functions
-  #####
-  multipartStart = (Bucket, Key, ContentType, options={}) ->
-    await s3.createMultipartUpload merge {Bucket, Key, ContentType}, options
+    #####
+    # Multipart upload functions
+    #####
+    multipartStart = (Bucket, Key, ContentType, options={}) ->
+      await s3.createMultipartUpload merge {Bucket, Key, ContentType}, options
 
-  multipartAbort = (Bucket, Key, UploadId) ->
-    await s3.abortMultipartUpload {Bucket, Key, UploadId}
+    multipartAbort = (Bucket, Key, UploadId) ->
+      await s3.abortMultipartUpload {Bucket, Key, UploadId}
 
-  multipartComplete = (Bucket, Key, UploadId, MultipartUpload) ->
-    await s3.completeMultipartUpload {Bucket, Key, UploadId, MultipartUpload}
+    multipartComplete = (Bucket, Key, UploadId, MultipartUpload) ->
+      await s3.completeMultipartUpload {Bucket, Key, UploadId, MultipartUpload}
 
-  multipartPut = (Bucket, Key, UploadId, PartNumber, part, filetype) ->
-    if filetype
-      # here, data is stringified data.
-      content = body = new Buffer part
-    else
-      # here, data is a path to file.
-      filetype = mime.lookup part
-      body = createReadStream part
-      content =
-        if "text" in filetype
-          await read part
-        else
-          await read part, "buffer"
+    multipartPut = (Bucket, Key, UploadId, PartNumber, part, filetype) ->
+      if filetype
+        # here, data is stringified data.
+        content = body = new Buffer part
+      else
+        # here, data is a path to file.
+        filetype = mime.getType part
+        body = createReadStream part
+        content =
+          if "text" in filetype
+            await read part
+          else
+            await read part, "buffer"
 
-    await s3.uploadPart {
-      Bucket, Key, UploadId, PartNumber,
-      ContentType: filetype
-      ContentMD5: new Buffer(md5(content), "hex").toString('base64')
-      Body: body
-    }
-
-
-  # Signing a URL grants the bearer the ability to perform the given action against an S3 object, even if they are not you.
-  sign = (action, parameters) ->
-    await s3.getSignedUrl action, parameters
-
-  signPost = (parameters) ->
-    await s3.createPresignedPost parameters
+      await s3.uploadPart {
+        Bucket, Key, UploadId, PartNumber,
+        ContentType: filetype
+        ContentMD5: new Buffer(md5(content), "hex").toString('base64')
+        Body: body
+      }
 
 
-  {bucketExists, exists, bucketTouch, put, get, del, bucketDel, list, bucketEmpty, multipartStart, multipartAbort, multipartPut, multipartComplete, sign, signPost}
+    # Signing a URL grants the bearer the ability to perform the given action against an S3 object, even if they are not you.
+    sign = (action, parameters) ->
+      await s3.getSignedUrl action, parameters
+
+    signPost = (parameters) ->
+      await s3.createPresignedPost parameters
+
+
+    {bucketExists, exists, bucketTouch, put, get, del, bucketDel, list, bucketEmpty, multipartStart, multipartAbort, multipartPut, multipartComplete, sign, signPost}
 
 
 export default s3Primitive

@@ -1,3 +1,6 @@
 import ENI from "./eni"
 
-export {ENI}
+EC2 = (SDK) ->
+  ENI: ENI SDK
+
+export default EC2

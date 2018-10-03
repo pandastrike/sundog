@@ -1,10 +1,12 @@
 # Primitives for the service Cognito.  The base entity is the "user".  Methods that act on other entities, like pools or clients are prefixed as such.
+import {applyConfiguration} from "../lift"
 
-stsPrimitive = (_AWS) ->
-  sts = _AWS.STS
+stsPrimitive = (SDK) ->
+  (configuration) ->
+    sts = applyConfiguration configuration, SDK.STS
 
-  whoAmI = -> await sts.getCallerIdentity()
+    whoAmI = -> await sts.getCallerIdentity()
 
-  {whoAmI}
+    {whoAmI}
 
 export default stsPrimitive

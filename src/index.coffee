@@ -1,18 +1,17 @@
-#import Engine from "./engine"
-import Pillar1 from "./lift"
-import Pillar2 from "./primitives"
-import Pillar3 from "./helpers"
+# Sundog
+# Base is a super thin wrapper around the AWS SDK, lifting each service module so you may use them with promises rather than callbacks.
+# Primatives is a slightly higher level wrapper - still promise based - to give the SDK a more functional flavor.
+
+import Base from "./lift-all"
+import Primatives from "./primitives"
 
 start = (engine) ->
   Object.defineProperties {},
     _AWS:
       enumerable: true
-      get: -> Pillar1 engine
+      get: -> Base engine
     AWS:
       enumerable: true
-      get: -> Pillar2 @_AWS
-    Helpers:
-      enumerable: true
-      get: -> Pillar3 @AWS
+      get: -> Primatives @_AWS
 
 export default start

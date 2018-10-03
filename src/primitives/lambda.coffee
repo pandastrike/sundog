@@ -1,29 +1,44 @@
-import {cat} from "fairmont"
+import {cat, merge} from "fairmont"
+import {applyConfiguration} from "../lift"
 
-lambdaPrimitive = (_AWS) ->
-  lambda = _AWS.Lambda
+lambdaPrimitive = (SDK) ->
+  (configuration) ->
+    lambda = applyConfiguration configuration, SDK.Lambda
 
-  update = (name, bucket, key) ->
-    await lambda.updateFunctionCode
-      FunctionName: name
-      Publish: true
-      S3Bucket: bucket
-      S3Key: key
+    update = (name, bucket, key) ->
+      await lambda.updateFunctionCode
+        FunctionName: name
+        Publish: true
+        S3Bucket: bucket
+        S3Key: key
 
-  list = (fns=[], marker) ->
-    params = {MaxItems: 100}
-    params.Marker = marker if marker
+    list = (fns=[], marker) ->
+      params = {MaxItems: 100}
+      params.Marker = marker if marker
 
-    {NextMarker, Functions} = await lambda.listFunctions params
-    fns = cat fns, Functions
-    if NextMarker
-      await list fns, NextMarker
-    else
-      fns
+      {NextMarker, Functions} = await lambda.listFunctions params
+      fns = cat fns, Functions
+      if NextMarker
+        await list fns, NextMarker
+      else
+        fns
 
-  Delete = (name) -> await lambda.deleteFunction FunctionName: name
+    Delete = (name) -> await lambda.deleteFunction FunctionName: name
 
-  {update, list, delete:Delete}
+    invoke = (FunctionName, input, options) ->
+      params = {
+        FunctionName
+        Payload: JSON.stringify input
+      }
+      params = merge params, options
+      await lambda.invoke params
+
+    asyncInvoke = (name, input, options) ->
+      options = merge options, {InvocationType: "Event"}
+      invoke name, input, options
+
+
+    {update, list, delete:Delete, invoke, asyncInvoke}
 
 
 export default lambdaPrimitive

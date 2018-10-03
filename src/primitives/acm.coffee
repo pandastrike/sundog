@@ -1,9 +1,11 @@
-import {call, collect, where, empty} from "fairmont"
-import {root, regularlyQualify} from "./url"
-import {SDK, liftService} from "../base"
+import {call, collect, where, empty, isString} from "fairmont"
+import URL from "./url"
+import {applyConfiguration} from "../lift"
 
-acmPrimitive = (region) ->
-    acm = liftService new SDK.ACM {region}
+acmPrimitive = (SDK) ->
+  {root, regularlyQualify} = URL()
+  (configuration) ->
+    acm = applyConfiguration configuration, SDK.ACM
 
     wild = (name) -> regularlyQualify "*." + root name
     apex = (name) -> regularlyQualify root name
