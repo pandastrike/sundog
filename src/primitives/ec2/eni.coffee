@@ -1,4 +1,4 @@
-import {collect, select, project, where, sleep, first} from "fairmont"
+import {collect, select, project, where, sleep, first} from "panda-parchment"
 import {applyConfiguration} from "../../lift"
 
 eniPrimitive = (SDK) ->

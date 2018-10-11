@@ -1,4 +1,4 @@
-import {isFunction, merge} from "fairmont"
+import {isFunction, merge} from "panda-parchment"
 import {liftService} from "./lift"
 
 avoidedServices = ["CloudSearchDomain", "IotData"]

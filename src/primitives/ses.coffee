@@ -1,5 +1,5 @@
 # Primitives for the service SES (simple email service).
-import {isObject, isArray, merge} from "fairmont"
+import {isObject, isArray, merge} from "panda-parchment"
 import {applyConfiguration} from "../lift"
 
 sesPrimitive = (SDK) ->

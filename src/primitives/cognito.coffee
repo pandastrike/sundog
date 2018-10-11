@@ -1,6 +1,6 @@
 # Primitives for the service Cognito.  The base entity is the "user".  Methods that act on other entities, like pools or clients are prefixed as such.
 
-import {cat, collect, where} from "fairmont"
+import {cat, collect, where} from "panda-parchment"
 import {applyConfiguration} from "../lift"
 
 cognitoPrimitive = (SDK) ->

@@ -1,7 +1,7 @@
 # Primitives for the service KMS.
 # NOTE: In KMS methods besides "create" and "delete" and "addAlias": ID can be key ID, key ARN, or key alias name.
 
-import {cat, merge} from "fairmont"
+import {cat, merge} from "panda-parchment"
 import {notFound} from "./utils"
 import {applyConfiguration} from "../lift"
 

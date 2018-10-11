@@ -3,11 +3,15 @@
 # prefixed "bucket*", whereas object methods will have no prefix.
 
 import {createReadStream} from "fs"
-import {curry, sleep, read, md5, cat, merge} from "fairmont"
+import {curry, sleep, cat, merge} from "panda-parchment"
+import {read} from "panda-quill"
 import mime from "mime"
 
 import {notFound} from "./utils"
 import {applyConfiguration} from "../lift"
+
+md5 = (string) ->
+  Crypto.createHash('md5').update(string, 'utf-8').digest("hex")
 
 s3Primitive = (SDK) ->
   (configuration) ->
@@ -35,7 +39,7 @@ s3Primitive = (SDK) ->
     put = curry (Bucket, Key, data, filetype) ->
       if filetype
         # here, data is stringified data.
-        content = body = new Buffer data
+        content = body = Buffer.from data
       else
         # here, data is a path to file.
         filetype = mime.getType data
@@ -49,7 +53,7 @@ s3Primitive = (SDK) ->
       await s3.putObject {
         Bucket, Key,
         ContentType: filetype
-        ContentMD5: new Buffer(md5(content), "hex").toString('base64')
+        ContentMD5: Buffer.from(md5(content), "hex").toString('base64')
         Body: body
       }
 
@@ -108,7 +112,7 @@ s3Primitive = (SDK) ->
     multipartPut = (Bucket, Key, UploadId, PartNumber, part, filetype) ->
       if filetype
         # here, data is stringified data.
-        content = body = new Buffer part
+        content = body = Buffer.from part
       else
         # here, data is a path to file.
         filetype = mime.getType part
@@ -122,7 +126,7 @@ s3Primitive = (SDK) ->
       await s3.uploadPart {
         Bucket, Key, UploadId, PartNumber,
         ContentType: filetype
-        ContentMD5: new Buffer(md5(content), "hex").toString('base64')
+        ContentMD5: Buffer.from(md5(content), "hex").toString('base64')
         Body: body
       }
 

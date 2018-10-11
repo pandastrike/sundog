@@ -3,7 +3,7 @@
 # This follows the naming convention that methods that work on Tables will be
 # prefixed "table*", whereas item methods will have no prefix.
 
-import {merge, sleep, empty, cat, collect, project, pick, curry, difference, first, keys, values, Method, isFunction, isObject} from "fairmont"
+import {merge, sleep, empty, cat, collect, project, pick, curry, difference, first, keys, values, Method, isFunction, isObject} from "panda-parchment"
 import {notFound} from "./utils"
 import {applyConfiguration} from "../lift"
 

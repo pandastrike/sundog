@@ -2,7 +2,7 @@
 # This follows the naming convention that methods that work on groups will be
 # prefixed "group*", whereas streams methods will have no prefix.
 
-import {cat, empty} from "fairmont"
+import {cat, empty} from "panda-parchment"
 import {applyConfiguration} from "../lift"
 
 cloudwatchPrimitive = (SDK) ->

@@ -1,4 +1,4 @@
-import {call, collect, where, empty, isString} from "fairmont"
+import {collect, where, empty, isString} from "panda-parchment"
 import URL from "./url"
 import {applyConfiguration} from "../lift"
 

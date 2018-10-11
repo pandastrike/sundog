@@ -1,4 +1,4 @@
-import {cat, collect, where, empty, sleep, merge} from "fairmont"
+import {cat, collect, where, empty, sleep, merge} from "panda-parchment"
 import {root, regularlyQualify} from "./url"
 import KMS from "./kms"
 import {applyConfiguration} from "../lift"

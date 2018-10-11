@@ -1,4 +1,4 @@
-import {last} from "fairmont"
+import {last} from "panda-parchment"
 
 urlPrimitive = ->
   # Enforces "fully qualified" form of hostnames and domains.  Idompotent.

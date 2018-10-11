@@ -5,13 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _fairmont = require("fairmont");
+var _pandaParchment = require("panda-parchment");
 
 var _lift = require("../lift");
-
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
-
-function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
 // Primitives for the service SES (simple email service).
 var sesPrimitive;
@@ -21,61 +17,53 @@ sesPrimitive = function (SDK) {
     var sendEmail, ses;
     ses = (0, _lift.applyConfiguration)(configuration, SDK.SES);
 
-    sendEmail =
-    /*#__PURE__*/
-    function () {
-      var _ref = _asyncToGenerator(function* (src, dest, subject, body, format = "text", opts = {}) {
-        var Body, Destination, Source, Subject, params;
-        Source = src;
+    sendEmail = async function (src, dest, subject, body, format = "text", opts = {}) {
+      var Body, Destination, Source, Subject, params;
+      Source = src;
 
-        if ((0, _fairmont.isArray)(dest)) {
-          Destination = {
-            ToAddresses: dest
-          };
-        } else if ((0, _fairmont.isObject)(dest)) {
-          Destination = dest;
-        } else {
-          Destination = {
-            ToAddresses: [dest]
-          };
-        }
-
-        Subject = {
-          Data: subject
+      if ((0, _pandaParchment.isArray)(dest)) {
+        Destination = {
+          ToAddresses: dest
         };
+      } else if ((0, _pandaParchment.isObject)(dest)) {
+        Destination = dest;
+      } else {
+        Destination = {
+          ToAddresses: [dest]
+        };
+      }
 
-        if (format === "text") {
-          Body = {
-            Text: {
-              Data: body
-            }
-          };
-        } else if (format === "html") {
-          Body = {
-            Html: {
-              Data: body
-            }
-          };
-        } else {
-          throw new Error("Unknown body format");
-        }
+      Subject = {
+        Data: subject
+      };
 
-        params = {
-          Source,
-          Destination,
-          Message: {
-            Subject,
-            Body
+      if (format === "text") {
+        Body = {
+          Text: {
+            Data: body
           }
         };
-        params = (0, _fairmont.merge)(params, opts);
-        return yield ses.sendEmail(params);
-      });
+      } else if (format === "html") {
+        Body = {
+          Html: {
+            Data: body
+          }
+        };
+      } else {
+        throw new Error("Unknown body format");
+      }
 
-      return function sendEmail(_x, _x2, _x3, _x4) {
-        return _ref.apply(this, arguments);
+      params = {
+        Source,
+        Destination,
+        Message: {
+          Subject,
+          Body
+        }
       };
-    }();
+      params = (0, _pandaParchment.merge)(params, opts);
+      return await ses.sendEmail(params);
+    };
 
     return {
       sendEmail
@@ -85,5 +73,5 @@ sesPrimitive = function (SDK) {
 
 var _default = sesPrimitive;
 exports.default = _default;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInByaW1pdGl2ZXMvc2VzLmNvZmZlZSJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7O0FBQ0E7O0FBQ0E7Ozs7OztBQUZBO0FBQUEsSUFBQSxZQUFBOztBQUlBLFlBQUEsR0FBZSxVQUFBLEdBQUEsRUFBQTtTQUNiLFVBQUEsYUFBQSxFQUFBO0FBQ0UsUUFBQSxTQUFBLEVBQUEsR0FBQTtBQUFBLElBQUEsR0FBQSxHQUFNLDhCQUFBLGFBQUEsRUFBa0MsR0FBRyxDQUFyQyxHQUFBLENBQU47O0FBRUEsSUFBQSxTQUFBO0FBQUE7QUFBQTtBQUFBLG1DQUFZLFdBQUEsR0FBQSxFQUFBLElBQUEsRUFBQSxPQUFBLEVBQUEsSUFBQSxFQUEyQixNQUFBLEdBQTNCLE1BQUEsRUFBMEMsSUFBQSxHQUExQyxFQUFBLEVBQUE7QUFDVixZQUFBLElBQUEsRUFBQSxXQUFBLEVBQUEsTUFBQSxFQUFBLE9BQUEsRUFBQSxNQUFBO0FBQUEsUUFBQSxNQUFBLEdBQVMsR0FBVDs7QUFDQSxZQUFHLHVCQUFILElBQUcsQ0FBSCxFQUFBO0FBQ0UsVUFBQSxXQUFBLEdBQWM7QUFBQSxZQUFBLFdBQUEsRUFBYTtBQUFiLFdBQWQ7QUFERixTQUFBLE1BRUssSUFBRyx3QkFBSCxJQUFHLENBQUgsRUFBQTtBQUNILFVBQUEsV0FBQSxHQURHLElBQ0g7QUFERyxTQUFBLE1BQUE7QUFHSCxVQUFBLFdBQUEsR0FBYztBQUFBLFlBQUEsV0FBQSxFQUFhLENBQUEsSUFBQTtBQUFiLFdBQWQ7OztBQUVGLFFBQUEsT0FBQSxHQUFVO0FBQUEsVUFBQSxJQUFBLEVBQU07QUFBTixTQUFWOztBQUNBLFlBQUcsTUFBQSxLQUFILE1BQUEsRUFBQTtBQUNFLFVBQUEsSUFBQSxHQUFPO0FBQUEsWUFBQSxJQUFBLEVBQU07QUFBQSxjQUFBLElBQUEsRUFBTTtBQUFOO0FBQU4sV0FBUDtBQURGLFNBQUEsTUFFSyxJQUFHLE1BQUEsS0FBSCxNQUFBLEVBQUE7QUFDSCxVQUFBLElBQUEsR0FBTztBQUFBLFlBQUEsSUFBQSxFQUFNO0FBQUEsY0FBQSxJQUFBLEVBQU07QUFBTjtBQUFOLFdBQVA7QUFERyxTQUFBLE1BQUE7QUFHSCxnQkFBTSxJQUFBLEtBQUEsQ0FISCxxQkFHRyxDQUFOOzs7QUFFRixRQUFBLE1BQUEsR0FBUztBQUFBLFVBQUEsTUFBQTtBQUFBLFVBQUEsV0FBQTtBQUdQLFVBQUEsT0FBQSxFQUFTO0FBQUEsWUFBQSxPQUFBO0FBQUEsWUFBQTtBQUFBO0FBSEYsU0FBVDtBQU1BLFFBQUEsTUFBQSxHQUFTLHFCQUFBLE1BQUEsRUFBQSxJQUFBLENBQVQ7QUFDQSxxQkFBTSxHQUFHLENBQUgsU0FBQSxDQUFOLE1BQU0sQ0FBTjtBQXhCVSxPQUFaOztBQUFBO0FBQUE7QUFBQTtBQUFBLE9BQUE7O1dBMEJBO0FBQUEsTUFBQTtBQUFBLEs7QUE3QkYsRztBQURhLENBQWY7O2VBaUNlLFkiLCJzb3VyY2VzQ29udGVudCI6WyIjIFByaW1pdGl2ZXMgZm9yIHRoZSBzZXJ2aWNlIFNFUyAoc2ltcGxlIGVtYWlsIHNlcnZpY2UpLlxuaW1wb3J0IHtpc09iamVjdCwgaXNBcnJheSwgbWVyZ2V9IGZyb20gXCJmYWlybW9udFwiXG5pbXBvcnQge2FwcGx5Q29uZmlndXJhdGlvbn0gZnJvbSBcIi4uL2xpZnRcIlxuXG5zZXNQcmltaXRpdmUgPSAoU0RLKSAtPlxuICAoY29uZmlndXJhdGlvbikgLT5cbiAgICBzZXMgPSBhcHBseUNvbmZpZ3VyYXRpb24gY29uZmlndXJhdGlvbiwgU0RLLlNFU1xuXG4gICAgc2VuZEVtYWlsID0gKHNyYywgZGVzdCwgc3ViamVjdCwgYm9keSwgZm9ybWF0PVwidGV4dFwiLCBvcHRzPXt9KSAtPlxuICAgICAgU291cmNlID0gc3JjXG4gICAgICBpZiBpc0FycmF5IGRlc3RcbiAgICAgICAgRGVzdGluYXRpb24gPSBUb0FkZHJlc3NlczogZGVzdFxuICAgICAgZWxzZSBpZiBpc09iamVjdCBkZXN0XG4gICAgICAgIERlc3RpbmF0aW9uID0gZGVzdFxuICAgICAgZWxzZVxuICAgICAgICBEZXN0aW5hdGlvbiA9IFRvQWRkcmVzc2VzOiBbZGVzdF1cblxuICAgICAgU3ViamVjdCA9IERhdGE6IHN1YmplY3RcbiAgICAgIGlmIGZvcm1hdCA9PSBcInRleHRcIlxuICAgICAgICBCb2R5ID0gVGV4dDogRGF0YTogYm9keVxuICAgICAgZWxzZSBpZiBmb3JtYXQgPT0gXCJodG1sXCJcbiAgICAgICAgQm9keSA9IEh0bWw6IERhdGE6IGJvZHlcbiAgICAgIGVsc2VcbiAgICAgICAgdGhyb3cgbmV3IEVycm9yIFwiVW5rbm93biBib2R5IGZvcm1hdFwiXG5cbiAgICAgIHBhcmFtcyA9IHtcbiAgICAgICAgU291cmNlXG4gICAgICAgIERlc3RpbmF0aW9uXG4gICAgICAgIE1lc3NhZ2U6IHtTdWJqZWN0LCBCb2R5fVxuICAgICAgfVxuXG4gICAgICBwYXJhbXMgPSBtZXJnZSBwYXJhbXMsIG9wdHNcbiAgICAgIGF3YWl0IHNlcy5zZW5kRW1haWwgcGFyYW1zXG5cbiAgICB7c2VuZEVtYWlsfVxuXG5cbmV4cG9ydCBkZWZhdWx0IHNlc1ByaW1pdGl2ZVxuIl0sInNvdXJjZVJvb3QiOiIifQ==
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInByaW1pdGl2ZXMvc2VzLmNvZmZlZSJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7O0FBQ0E7O0FBQ0E7O0FBRkE7QUFBQSxJQUFBLFlBQUE7O0FBSUEsWUFBQSxHQUFlLFVBQUEsR0FBQSxFQUFBO1NBQ2IsVUFBQSxhQUFBLEVBQUE7QUFDRSxRQUFBLFNBQUEsRUFBQSxHQUFBO0FBQUEsSUFBQSxHQUFBLEdBQU0sOEJBQUEsYUFBQSxFQUFrQyxHQUFHLENBQXJDLEdBQUEsQ0FBTjs7QUFFQSxJQUFBLFNBQUEsR0FBWSxnQkFBQSxHQUFBLEVBQUEsSUFBQSxFQUFBLE9BQUEsRUFBQSxJQUFBLEVBQTJCLE1BQUEsR0FBM0IsTUFBQSxFQUEwQyxJQUFBLEdBQTFDLEVBQUEsRUFBQTtBQUNWLFVBQUEsSUFBQSxFQUFBLFdBQUEsRUFBQSxNQUFBLEVBQUEsT0FBQSxFQUFBLE1BQUE7QUFBQSxNQUFBLE1BQUEsR0FBUyxHQUFUOztBQUNBLFVBQUcsNkJBQUgsSUFBRyxDQUFILEVBQUE7QUFDRSxRQUFBLFdBQUEsR0FBYztBQUFBLFVBQUEsV0FBQSxFQUFhO0FBQWIsU0FBZDtBQURGLE9BQUEsTUFFSyxJQUFHLDhCQUFILElBQUcsQ0FBSCxFQUFBO0FBQ0gsUUFBQSxXQUFBLEdBREcsSUFDSDtBQURHLE9BQUEsTUFBQTtBQUdILFFBQUEsV0FBQSxHQUFjO0FBQUEsVUFBQSxXQUFBLEVBQWEsQ0FBQSxJQUFBO0FBQWIsU0FBZDs7O0FBRUYsTUFBQSxPQUFBLEdBQVU7QUFBQSxRQUFBLElBQUEsRUFBTTtBQUFOLE9BQVY7O0FBQ0EsVUFBRyxNQUFBLEtBQUgsTUFBQSxFQUFBO0FBQ0UsUUFBQSxJQUFBLEdBQU87QUFBQSxVQUFBLElBQUEsRUFBTTtBQUFBLFlBQUEsSUFBQSxFQUFNO0FBQU47QUFBTixTQUFQO0FBREYsT0FBQSxNQUVLLElBQUcsTUFBQSxLQUFILE1BQUEsRUFBQTtBQUNILFFBQUEsSUFBQSxHQUFPO0FBQUEsVUFBQSxJQUFBLEVBQU07QUFBQSxZQUFBLElBQUEsRUFBTTtBQUFOO0FBQU4sU0FBUDtBQURHLE9BQUEsTUFBQTtBQUdILGNBQU0sSUFBQSxLQUFBLENBSEgscUJBR0csQ0FBTjs7O0FBRUYsTUFBQSxNQUFBLEdBQVM7QUFBQSxRQUFBLE1BQUE7QUFBQSxRQUFBLFdBQUE7QUFHUCxRQUFBLE9BQUEsRUFBUztBQUFBLFVBQUEsT0FBQTtBQUFBLFVBQUE7QUFBQTtBQUhGLE9BQVQ7QUFNQSxNQUFBLE1BQUEsR0FBUywyQkFBQSxNQUFBLEVBQUEsSUFBQSxDQUFUO0FBQ0EsYUFBQSxNQUFNLEdBQUcsQ0FBSCxTQUFBLENBQU4sTUFBTSxDQUFOO0FBeEJVLEtBQVo7O1dBMEJBO0FBQUEsTUFBQTtBQUFBLEs7QUE3QkYsRztBQURhLENBQWY7O2VBaUNlLFkiLCJzb3VyY2VzQ29udGVudCI6WyIjIFByaW1pdGl2ZXMgZm9yIHRoZSBzZXJ2aWNlIFNFUyAoc2ltcGxlIGVtYWlsIHNlcnZpY2UpLlxuaW1wb3J0IHtpc09iamVjdCwgaXNBcnJheSwgbWVyZ2V9IGZyb20gXCJwYW5kYS1wYXJjaG1lbnRcIlxuaW1wb3J0IHthcHBseUNvbmZpZ3VyYXRpb259IGZyb20gXCIuLi9saWZ0XCJcblxuc2VzUHJpbWl0aXZlID0gKFNESykgLT5cbiAgKGNvbmZpZ3VyYXRpb24pIC0+XG4gICAgc2VzID0gYXBwbHlDb25maWd1cmF0aW9uIGNvbmZpZ3VyYXRpb24sIFNESy5TRVNcblxuICAgIHNlbmRFbWFpbCA9IChzcmMsIGRlc3QsIHN1YmplY3QsIGJvZHksIGZvcm1hdD1cInRleHRcIiwgb3B0cz17fSkgLT5cbiAgICAgIFNvdXJjZSA9IHNyY1xuICAgICAgaWYgaXNBcnJheSBkZXN0XG4gICAgICAgIERlc3RpbmF0aW9uID0gVG9BZGRyZXNzZXM6IGRlc3RcbiAgICAgIGVsc2UgaWYgaXNPYmplY3QgZGVzdFxuICAgICAgICBEZXN0aW5hdGlvbiA9IGRlc3RcbiAgICAgIGVsc2VcbiAgICAgICAgRGVzdGluYXRpb24gPSBUb0FkZHJlc3NlczogW2Rlc3RdXG5cbiAgICAgIFN1YmplY3QgPSBEYXRhOiBzdWJqZWN0XG4gICAgICBpZiBmb3JtYXQgPT0gXCJ0ZXh0XCJcbiAgICAgICAgQm9keSA9IFRleHQ6IERhdGE6IGJvZHlcbiAgICAgIGVsc2UgaWYgZm9ybWF0ID09IFwiaHRtbFwiXG4gICAgICAgIEJvZHkgPSBIdG1sOiBEYXRhOiBib2R5XG4gICAgICBlbHNlXG4gICAgICAgIHRocm93IG5ldyBFcnJvciBcIlVua25vd24gYm9keSBmb3JtYXRcIlxuXG4gICAgICBwYXJhbXMgPSB7XG4gICAgICAgIFNvdXJjZVxuICAgICAgICBEZXN0aW5hdGlvblxuICAgICAgICBNZXNzYWdlOiB7U3ViamVjdCwgQm9keX1cbiAgICAgIH1cblxuICAgICAgcGFyYW1zID0gbWVyZ2UgcGFyYW1zLCBvcHRzXG4gICAgICBhd2FpdCBzZXMuc2VuZEVtYWlsIHBhcmFtc1xuXG4gICAge3NlbmRFbWFpbH1cblxuXG5leHBvcnQgZGVmYXVsdCBzZXNQcmltaXRpdmVcbiJdLCJzb3VyY2VSb290IjoiIn0=
 //# sourceURL=primitives/ses.coffee

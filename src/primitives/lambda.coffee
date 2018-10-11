@@ -1,4 +1,4 @@
-import {cat, merge} from "fairmont"
+import {cat, merge} from "panda-parchment"
 import {applyConfiguration} from "../lift"
 
 lambdaPrimitive = (SDK) ->

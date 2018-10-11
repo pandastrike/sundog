@@ -7,7 +7,9 @@
     "build/npm/src",
     "LICENSE"
   ],
-  "scripts": {},
+  "scripts": {
+    "test": "gulp npm:test"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pandastrike/sundog.git"
@@ -34,14 +36,16 @@
   },
   "homepage": "https://github.com/pandastrike/sundog#readme",
   "dependencies": {
-    "fairmont": "^2.0.1",
-    "mime": "^2.0.3"
+    "mime": "^2.0.3",
+    "panda-parchment": "^4.0.4",
+    "panda-quill": "^3.1.1"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.1.0",
-    "coffeescript": "2.1.0",
+    "amen": "^2.1.0",
+    "coffeescript": "^2.1.0",
     "gulp": "github:gulpjs/gulp#4.0",
-    "panda-builder": "^2.3.3",
+    "panda-builder": "^2.4.0",
     "source-map-support": "^0.5.0"
   }
 }

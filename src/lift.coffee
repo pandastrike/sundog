@@ -1,4 +1,4 @@
-import {isFunction, lift, bind} from "fairmont"
+import {isFunction, rephrase as lift, bind} from "panda-parchment"
 
 liftService = (s) ->
   service = {}
