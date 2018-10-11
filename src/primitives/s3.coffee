@@ -3,7 +3,9 @@
 # prefixed "bucket*", whereas object methods will have no prefix.
 
 import {createReadStream} from "fs"
-import {curry, sleep, cat, merge} from "panda-parchment"
+import Crypto from "crypto"
+import {curry} from "panda-garden"
+import {sleep, cat, merge} from "panda-parchment"
 import {read} from "panda-quill"
 import mime from "mime"
 

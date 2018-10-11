@@ -12,6 +12,9 @@ lambdaPrimitive = (SDK) ->
         S3Bucket: bucket
         S3Key: key
 
+    updateConfig = (FunctionName, config) ->
+      await lambda.updateFunctionConfiguration merge {FunctionName}, config
+
     list = (fns=[], marker) ->
       params = {MaxItems: 100}
       params.Marker = marker if marker
@@ -38,7 +41,7 @@ lambdaPrimitive = (SDK) ->
       invoke name, input, options
 
 
-    {update, list, delete:Delete, invoke, asyncInvoke}
+    {update, updateConfig, list, delete:Delete, invoke, asyncInvoke}
 
 
 export default lambdaPrimitive

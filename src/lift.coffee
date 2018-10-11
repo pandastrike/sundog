@@ -1,4 +1,6 @@
-import {isFunction, rephrase as lift, bind} from "panda-parchment"
+import {isFunction, rephrase, bind} from "panda-parchment"
+
+lift = rephrase "node"
 
 liftService = (s) ->
   service = {}
