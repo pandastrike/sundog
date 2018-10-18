@@ -1,4 +1,6 @@
-import {first, sleep, cat, collect, where} from "panda-parchment"
+import {first, sleep, cat} from "panda-parchment"
+import {collect} from "panda-river"
+import {where} from "./utils"
 import {applyConfiguration} from "../lift"
 
 cloudformationPrimitive = (SDK) ->

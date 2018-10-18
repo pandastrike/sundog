@@ -1,4 +1,6 @@
-import {collect, where, empty, isString} from "panda-parchment"
+import {empty, isString} from "panda-parchment"
+import {collect} from "panda-river"
+import {where} from "./utils"
 import URL from "./url"
 import {applyConfiguration} from "../lift"
 

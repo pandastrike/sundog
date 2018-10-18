@@ -38,8 +38,10 @@
   "dependencies": {
     "mime": "^2.0.3",
     "panda-garden": "^3.0.4",
+    "panda-generics": "^4.0.2",
     "panda-parchment": "^4.0.4",
-    "panda-quill": "^3.1.1"
+    "panda-quill": "^3.1.1",
+    "panda-river": "^4.0.9"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.1.0",

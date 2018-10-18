@@ -1,4 +1,6 @@
-import {cat, collect, where, empty, sleep, merge} from "panda-parchment"
+import {cat, empty, sleep, merge} from "panda-parchment"
+import {collect} from "panda-river"
+import {where} from "./utils"
 import {root, regularlyQualify} from "./url"
 import KMS from "./kms"
 import {applyConfiguration} from "../lift"
