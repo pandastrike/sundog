@@ -237,9 +237,9 @@ dynamodbPrimitive = (SDK) ->
 
     update = (name, key, updateEx, options={}) ->
       p = {TableName: name, Key: key}
-      {result, values} = _parseConditional updateEx
+      {result, values:_values} = _parseConditional updateEx
       options.UpdateExpression = result if result
-      options.ExpressionAttributeValues = values if values
+      options.ExpressionAttributeValues = _values if _values
       await db.updateItem merge p, options
 
     query = (name, keyEx, filterEx, options={}, current) ->
