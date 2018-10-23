@@ -5,7 +5,7 @@ import {applyConfiguration} from "../lift"
 
 route53Primitive = (SDK) ->
   (configuration) ->
-    route53 = applyConfiguration configuratin, SDK.Route53
+    route53 = applyConfiguration configuration, SDK.Route53
     {root, fullyQualify} = URL()
 
     hzList = (current=[], marker) ->
