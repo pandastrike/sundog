@@ -1,6 +1,6 @@
 {
   "name": "sundog",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Wrapper for the JavaScript AWS SDK, powered by Fairmont to give it a functional boost",
   "main": "build/npm/src/index.js",
   "files": [
@@ -40,7 +40,7 @@
     "panda-garden": "^3.2.0",
     "panda-generics": "^4.2.0",
     "panda-parchment": "^4.2.0",
-    "panda-quill": "^3.4.0",
+    "panda-quill": "^3.4.1",
     "panda-river": "^4.4.0"
   },
   "devDependencies": {
