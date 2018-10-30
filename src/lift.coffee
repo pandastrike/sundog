@@ -1,6 +1,19 @@
-import {isFunction, rephrase, bind} from "panda-parchment"
+import {isFunction, bind} from "panda-parchment"
 
-lift = rephrase "node"
+promise = (f) -> new Promise f
+
+callback = (resolve, reject) -> [
+    (error, args...) ->
+      if error then (reject error) else (resolve args...)
+  ]
+
+lift = (f) ->
+  (args...) ->
+      promise (resolve, reject) ->
+        try
+          f args..., (callback resolve, reject)...
+        catch error
+          reject error
 
 liftService = (s) ->
   service = {}
