@@ -48,7 +48,20 @@ cloudwatchPrimitive = (SDK) ->
       else
         current
 
+    exists = (name) ->
+      {logGroups} = await logs.describeLogGroups
+        limit: 1
+        logGroupNamePrefix: name
+
+      if empty logGroups
+        false
+      else
+        true
+
+    create = (name) ->
+      await logs.createLogGroup logGroupName: name
+
     # Return exposed functions.
-    {groupList, latest, tail}
+    {groupList, latest, tail, exists, create}
 
 export default cloudwatchPrimitive
