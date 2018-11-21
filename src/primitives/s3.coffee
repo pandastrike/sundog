@@ -62,7 +62,10 @@ s3Primitive = (SDK) ->
     get = curry (name, key, encoding="utf8") ->
       try
         {Body} = await s3.getObject {Bucket: name, Key: key}
-        Body.toString encoding
+        if encoding == "binary"
+          Body
+        else
+          Body.toString encoding
       catch e
         notFound e
 
