@@ -4,32 +4,30 @@
 
 import {createReadStream} from "fs"
 import Crypto from "crypto"
-import {curry} from "panda-garden"
-import {sleep, cat, merge} from "panda-parchment"
+import {sleep, cat, merge, isString, isBuffer, isObject} from "panda-parchment"
 import {read} from "panda-quill"
+import {Method} from "panda-generics"
 import mime from "mime"
 
 import {notFound} from "./utils"
 import {applyConfiguration} from "../lift"
 
-md5 = (string) ->
-  Crypto.createHash('md5').update(string, 'utf-8').digest("hex")
+md5 = (buffer) ->
+  Crypto.createHash('md5').update(buffer).digest("base64")
 
 s3Primitive = (SDK) ->
   (configuration) ->
     s3 = applyConfiguration configuration, SDK.S3
 
-    bucketExists = (name) ->
+    bucketHead = bucketExists = (name) ->
       try
         await s3.headBucket Bucket: name
-        true
       catch e
         notFound e
 
-    exists = curry (name, key) ->
+    head = exists = (name, key) ->
       try
         await s3.headObject {Bucket: name, Key: key}
-        true
       catch e
         notFound e
 
@@ -38,28 +36,35 @@ s3Primitive = (SDK) ->
       await s3.createBucket {Bucket: name}
       await sleep 15000 # race condition with S3 API.  Wait to be available.
 
-    put = curry (Bucket, Key, data, filetype) ->
-      if filetype
-        # here, data is stringified data.
-        content = body = Buffer.from data
-      else
-        # here, data is a path to file.
-        filetype = mime.getType data
-        body = createReadStream data
-        content =
-          if "text" in mime.getType(data)
-            await read data
-          else
-            await read data, "buffer"
-
+    put = Method.create default: (args...) ->
+      console.error "sundog:s3:put, unable to match to method on", args
+      throw new Error()
+    # Putting a buffer of raw data to S3
+    Method.define put, isString, isString, isBuffer, isString,
+    (Bucket, Key, buffer, type) ->
       await s3.putObject {
         Bucket, Key,
-        ContentType: filetype
-        ContentMD5: Buffer.from(md5(content), "hex").toString('base64')
-        Body: body
+        ContentType: type
+        ContentMD5: md5 buffer
+        Body: buffer
       }
+    # Putting a string to S3
+    Method.define put, isString, isString, isString, isString,
+    (Bucket, Key, text, type) ->
+      put Bucket, Key, Buffer.from(text, type), type
 
-    get = curry (name, key, encoding="utf8") ->
+    # Putting a file on disk to S3
+    Method.define put, isString, isString, isString,
+    (Bucket, Key, path) ->
+      put Bucket, Key, (read path, "buffer"), (mime.getType path)
+
+    # Putting a file on disk to S3, with type override
+    Method.define put, isString, isString, isObject,
+    (Bucket, Key, file) ->
+      put Bucket, Key, (read file.path, "buffer"), file.type
+
+
+    get = (name, key, encoding="utf8") ->
       try
         {Body} = await s3.getObject {Bucket: name, Key: key}
         if encoding == "binary"
@@ -69,7 +74,7 @@ s3Primitive = (SDK) ->
       catch e
         notFound e
 
-    del = curry (name, key) ->
+    del = (name, key) ->
       try
         await s3.deleteObject {Bucket: name, Key: key}
       catch e
@@ -81,7 +86,7 @@ s3Primitive = (SDK) ->
       catch e
         notFound e
 
-    list = curry (name, items=[], marker) ->
+    list = (name, items=[], marker) ->
       p = {Bucket: name, MaxKeys: 1000}
       p.ContinuationToken = marker if marker
 
@@ -114,27 +119,35 @@ s3Primitive = (SDK) ->
     multipartComplete = (Bucket, Key, UploadId, MultipartUpload) ->
       await s3.completeMultipartUpload {Bucket, Key, UploadId, MultipartUpload}
 
-    multipartPut = (Bucket, Key, UploadId, PartNumber, part, filetype) ->
-      if filetype
-        # here, data is stringified data.
-        content = body = Buffer.from part
-      else
-        # here, data is a path to file.
-        filetype = mime.getType part
-        body = createReadStream part
-        content =
-          if "text" in filetype
-            await read part
-          else
-            await read part, "buffer"
-
+    multipartPut = Method.create default: (args...) ->
+      console.error "sundog:s3:multipartPut, unable to match method on", args
+      throw new Error()
+    # Putting a buffer of raw data to S3
+    Method.define multipartPut, isString, isString, isString, isString, isBuffer, isString,
+    (Bucket, Key, UploadId, PartNumber, buffer, type) ->
       await s3.uploadPart {
         Bucket, Key, UploadId, PartNumber,
-        ContentType: filetype
-        ContentMD5: Buffer.from(md5(content), "hex").toString('base64')
-        Body: body
+        ContentType: type
+        ContentMD5: md5 buffer
+        Body: buffer
       }
+    # Putting a string to S3
+    Method.define multipartPut, isString, isString, isString, isString, isString, isString,
+    (Bucket, Key, UploadId, PartNumber, text, type) ->
+      multipartPut Bucket, Key, UploadId, PartNumber,
+        Buffer.from(text, type), type
 
+    # Putting a file on disk to S3
+    Method.define multipartPut, isString, isString, isString, isString, isString
+    (Bucket, Key, UploadId, PartNumber, path) ->
+      multipartPut Bucket, Key, UploadId, PartNumber,
+        (read path, "buffer"), (mime.getType path)
+
+    # Putting a file on disk to S3, with type override
+    Method.define multipartPut, isString, isString, isString, isString, isString
+    (Bucket, Key, UploadId, PartNumber, path) ->
+      multipartPut Bucket, Key, UploadId, PartNumber,
+        (read file.path, "buffer"), file.type
 
     # Signing a URL grants the bearer the ability to perform the given action against an S3 object, even if they are not you.
     sign = (action, parameters) ->
@@ -144,7 +157,7 @@ s3Primitive = (SDK) ->
       await s3.createPresignedPost parameters
 
 
-    {bucketExists, exists, bucketTouch, put, get, del, bucketDel, list, bucketEmpty, multipartStart, multipartAbort, multipartPut, multipartComplete, sign, signPost}
+    {bucketExists, bucketHead, exists, head, bucketTouch, put, get, del, bucketDel, list, bucketEmpty, multipartStart, multipartAbort, multipartPut, multipartComplete, sign, signPost}
 
 
 export default s3Primitive
