@@ -7,6 +7,7 @@ import dynamodb from "./dynamodb"
 import ec2 from "./ec2"
 import kms from "./kms"
 import lambda from "./lambda"
+import neptune from "./neptune"
 import route53 from "./route53"
 import s3 from "./s3"
 import ses from "./ses"
@@ -43,6 +44,9 @@ Primitives = (_AWS) ->
     Lambda:
       enumerable: true
       get: -> lambda _AWS.SDK
+    Neptune:
+      enumerable: true
+      get: -> neptune _AWS.SDK
     Route53:
       enumerable: true
       get: -> route53 _AWS.SDK
