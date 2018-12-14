@@ -13,7 +13,6 @@ range = curry (pageSize, page) ->
   end = pageSize * (page + 1)
   "range(#{start}, #{end})"
 
-getID = curry (name, data) -> data[name]
 
-export default {upsert, range, getID}
-export {upsert, range, getID}
+export default {upsert, range}
+export {upsert, range}
