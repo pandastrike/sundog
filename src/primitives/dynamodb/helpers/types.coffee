@@ -4,7 +4,7 @@
 # DynamoDB includes type information mapped into its data strctures.
 # It expects data to be input that way, and includes it when fetched.
 # These helpers write and parse that type system.
-import {curry} from "panda-parchment"
+import {curry, empty, isBoolean, isObject, keys} from "panda-parchment"
 import {isObject, first, keys, values} from "panda-parchment"
 
 _transform = (f) ->
@@ -66,9 +66,24 @@ parse = curry (types, data) ->
         throw new Error "#{type} is not a known DynamoDB type or sundog extension."
   result
 
+# Accept an incoming object to store in DynamoDB, rejecting fields that do not have a defined type or are not suitable for DynamoDB.
+# From their docs:
+# > Attribute values cannot be null. String and Binary type attributes must have lengths greater than zero. Set type attributes cannot be empty.
 wrap = curry (types, data) ->
   out = {}
-  out[name] = to[type] data[name] for name, type of types
+  for name, value of data
+    if (type = types[name])? && value?
+      switch type
+        when "S", "SS", "L", "B", "NS", "BS"
+          out[name] = to[type] value unless empty value
+        when "N"
+          out[name] = to[type] value unless Number.isNaN value
+        when "BOOL", "NULL"
+          out[name] = to[type] value if isBoolean value
+        when "M"
+          out[name] = to[type] value if (isObject value) && (!empty keys value)
+        when "JSON"
+          out[name] = to[type] value unless empty JSON.stringify value
   out
 
 # Given data and a model definition, return the key for this object.
