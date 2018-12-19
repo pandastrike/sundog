@@ -1,6 +1,6 @@
 #import {applyConfiguration} from "../lift"
 import {curry} from "panda-garden"
-import {upsert:_upsert, range:_range} from "./helpers"
+import {upsert as _upsert, range as _range} from "./helpers"
 
 
 Model = (definition) ->

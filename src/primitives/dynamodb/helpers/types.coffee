@@ -4,8 +4,8 @@
 # DynamoDB includes type information mapped into its data strctures.
 # It expects data to be input that way, and includes it when fetched.
 # These helpers write and parse that type system.
-import {curry, empty, isBoolean, isObject, keys} from "panda-parchment"
-import {isObject, first, keys, values} from "panda-parchment"
+import {curry} from "panda-garden"
+import {empty, isBoolean, isObject, keys, values, first} from "panda-parchment"
 
 _transform = (f) ->
   (x) ->

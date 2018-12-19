@@ -1,6 +1,6 @@
 import {empty, first} from "panda-parchment"
-import {wrap:_wrap, parse:_parse, getKey:_getKey} from "./helpers/types"
-import {numberEx, updateEx:_updateEx, dropEx, qv} from "./helpers/expressions"
+import {wrap as _wrap, parse as _parse, getKey as _getKey} from "./helpers/types"
+import {numberEx, updateEx as _updateEx, dropEx, qv} from "./helpers/expressions"
 import Items from "./items"
 
 DynamoDB = (db) ->
