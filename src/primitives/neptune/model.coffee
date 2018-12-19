@@ -10,4 +10,4 @@ Model = (definition) ->
   {range, upsert}
 
 
-export default Model
+export default {Model}

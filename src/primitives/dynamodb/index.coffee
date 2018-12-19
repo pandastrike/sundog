@@ -3,6 +3,7 @@ import {applyConfiguration} from "../../lift"
 import Tables from "./tables"
 import Items from "./items"
 import Queries from "./queries"
+import Model from "./model"
 import Expressions from "./helpers/expressions"
 import Types from "./helpers/types"
 
@@ -14,8 +15,9 @@ dynamodbPrimitive = (SDK) ->
       Tables db
       Items db
       Queries db
+      Model db
       Expressions
       Types
-    ]
+    ]...
 
 export default dynamodbPrimitive

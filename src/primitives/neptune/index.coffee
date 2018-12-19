@@ -10,6 +10,6 @@ neptunePrimitive = (SDK) ->
     merge [
       Helpers
       Model
-    ]
+    ]...
 
 export default neptunePrimitive
