@@ -5,7 +5,7 @@
 # It expects data to be input that way, and includes it when fetched.
 # These helpers write and parse that type system.
 import {curry} from "panda-garden"
-import {empty, isBoolean, isObject, keys, values, first} from "panda-parchment"
+import {empty, isBoolean, isObject, keys, values, first, merge} from "panda-parchment"
 
 _transform = (f) ->
   (x) ->
@@ -13,6 +13,8 @@ _transform = (f) ->
       out = {}
       out[k] = _mark("anonymousDynamodbValue", f v) for k, v of x
       _mark "namedDynamodbValue", out
+    else if !x?
+      throw new Error "sundog::dynamodb::to Cannot type cast value that is undefined."
     else
       _mark "anonymousDynamodbValue", f x
 
@@ -58,10 +60,10 @@ parse = curry (types, data) ->
     result[name] = switch type
       # NoOps on the base types
       when "S", "N", "BOOL", "SS", "L", "B", "NS", "BS", "NULL", "M"
-        v
+        result[name]
       # Extensions
       when "JSON"
-        JSON.parse v
+        JSON.parse result[name]
       else
         throw new Error "#{type} is not a known DynamoDB type or sundog extension."
   result
@@ -70,21 +72,26 @@ parse = curry (types, data) ->
 # From their docs:
 # > Attribute values cannot be null. String and Binary type attributes must have lengths greater than zero. Set type attributes cannot be empty.
 wrap = curry (types, data) ->
-  out = {}
+  out = []
   for name, value of data
     if (type = types[name])? && value?
       switch type
         when "S", "SS", "L", "B", "NS", "BS"
-          out[name] = to[type] value unless empty value
+          unless empty value
+            out.push (merge to[type] [name]:value)
         when "N"
-          out[name] = to[type] value unless Number.isNaN value
+          unless Number.isNaN value
+            out.push (merge to[type] [name]:value)
         when "BOOL", "NULL"
-          out[name] = to[type] value if isBoolean value
+          if isBoolean value
+            out.push (merge to[type] [name]:value)
         when "M"
-          out[name] = to[type] value if (isObject value) && (!empty keys value)
+          if (isObject value) && (!empty keys value)
+            out.push (merge to[type] [name]:value)
         when "JSON"
-          out[name] = to[type] value unless empty JSON.stringify value
-  out
+          unless empty JSON.stringify value
+            out.push (merge to[type] [name]:value)
+  merge out...
 
 # Given data and a model definition, return the key for this object.
 getKey = curry (definition, data) ->
@@ -96,6 +103,7 @@ getKey = curry (definition, data) ->
       key = merge key, f [name]: data[name]
     else
       key = merge key, f [name]: data
+  key
 
 
 export default {to, parse, wrap, getKey}
