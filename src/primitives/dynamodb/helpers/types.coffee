@@ -42,9 +42,9 @@ _parse = (attributes) ->
     v = first values typeObj
     result[name] = switch dataType
       when "S", "SS", "L", "BOOL" then v
-      when "N" then new Number v
+      when "N" then Number v
       when "B" then Buffer.from v, "base64"
-      when "NS" then (new Number i for i in v)
+      when "NS" then (Number i for i in v)
       when "BS" then (Buffer.from i, "base64" for i in v)
       when "NULL"
         if v then null else undefined
@@ -56,14 +56,15 @@ _parse = (attributes) ->
 # This wraps _parse to extend parsing to data types we define.
 parse = curry (types, data) ->
   result = _parse data
-  for name, type of types
+  for name, value of result
+    type = types[name]
     result[name] = switch type
       # NoOps on the base types
       when "S", "N", "BOOL", "SS", "L", "B", "NS", "BS", "NULL", "M"
-        result[name]
+        value
       # Extensions
       when "JSON"
-        JSON.parse result[name]
+        JSON.parse value
       else
         throw new Error "#{type} is not a known DynamoDB type or sundog extension."
   result
