@@ -29,8 +29,8 @@ to =
   BS: _transform (a) -> BS: (i.toString("base64") for i in a)
   M: _transform (m) -> M: m
   L: _transform (l) -> L: l
-  Null: _transform (n) -> NULL: n
-  Bool: _transform (b) -> BOOL: b
+  NULL: _transform (n) -> NULL: n
+  BOOL: _transform (b) -> BOOL: b
   # Extension of DynamoDB types to stringify objects. *Must always be named.*
   JSON: _transform (o) -> S: JSON.stringify o
 
