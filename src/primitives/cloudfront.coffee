@@ -1,14 +1,14 @@
 import {cat, empty, sleep, merge} from "panda-parchment"
 import {collect} from "panda-river"
-import {where} from "./utils"
-import {root, regularlyQualify} from "./url"
+import {where} from "./private-utils"
+import {root, regularlyQualify} from "../helpers/url"
 import KMS from "./kms"
 import {applyConfiguration} from "../lift"
 
 cloudfrontPrimitive = (SDK) ->
   (configuration) ->
     cfr = applyConfiguration configuration, SDK.CloudFront
-    {randomKey} = KMS _AWS
+    {randomKey} = (KMS SDK) configuration
 
     list = (current=[], marker) ->
       params = MaxItems: "100"

@@ -1,11 +1,10 @@
 import {empty, isString} from "panda-parchment"
 import {collect} from "panda-river"
-import {where} from "./utils"
-import URL from "./url"
+import {where} from "./private-utils"
+import {root, regularlyQualify} from "../helpers/url"
 import {applyConfiguration} from "../lift"
 
 acmPrimitive = (SDK) ->
-  {root, regularlyQualify} = URL()
   (configuration) ->
     acm = applyConfiguration configuration, SDK.ACM
 

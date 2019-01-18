@@ -1,5 +1,5 @@
 import {cat} from "panda-parchment"
-import {notFound} from "../../utils"
+import {notFound} from "../../private-utils"
 
 
 Section = (s3) ->

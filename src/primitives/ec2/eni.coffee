@@ -1,6 +1,6 @@
 import {sleep, first} from "panda-parchment"
 import {collect, select, project} from "panda-river"
-import {where} from "../utils"
+import {where} from "../private-utils"
 import {applyConfiguration} from "../../lift"
 
 eniPrimitive = (SDK) ->

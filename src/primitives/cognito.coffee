@@ -2,7 +2,7 @@
 
 import {cat} from "panda-parchment"
 import {collect} from "panda-river"
-import {where} from "./utils"
+import {where} from "./private-utils"
 import {applyConfiguration} from "../lift"
 
 cognitoPrimitive = (SDK) ->

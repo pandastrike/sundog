@@ -2,7 +2,7 @@
 # NOTE: In KMS methods besides "create" and "delete" and "addAlias": ID can be key ID, key ARN, or key alias name.
 
 import {cat, merge} from "panda-parchment"
-import {notFound} from "./utils"
+import {notFound} from "./private-utils"
 import {applyConfiguration} from "../lift"
 
 cognitoPrimitive = (SDK) ->

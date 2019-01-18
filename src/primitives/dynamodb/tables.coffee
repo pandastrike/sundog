@@ -4,7 +4,7 @@
 import {curry} from "panda-garden"
 import {merge, sleep, empty, difference, pick} from "panda-parchment"
 import {collect, project} from "panda-river"
-import {notFound} from "../utils"
+import {notFound} from "../private-utils"
 import Queries from "./queries"
 
 DynamoDB = (db) ->

@@ -4,7 +4,7 @@
 
 import {sleep, merge, isArray} from "panda-parchment"
 import {collect, project, partition} from "panda-river"
-import {notFound} from "../utils"
+import {notFound} from "../private-utils"
 
 Section = (s3, fns) ->
   bucketHead = bucketExists = (name) ->

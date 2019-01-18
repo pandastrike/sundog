@@ -13,7 +13,6 @@ import s3 from "./s3"
 import ses from "./ses"
 import sns from "./sns"
 import sts from "./sts"
-import url from "./url"  # URL parsing / formatting helpers
 
 Primitives = (_AWS) ->
   Object.defineProperties {},
@@ -62,8 +61,5 @@ Primitives = (_AWS) ->
     STS:
       enumerable: true
       get: -> sts _AWS.SDK
-    URL:
-      enumerable: true
-      get: -> url()
 
 export default Primitives

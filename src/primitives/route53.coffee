@@ -1,13 +1,12 @@
 import {cat, empty} from "panda-parchment"
 import {collect} from "panda-river"
-import {where} from "./utils"
-import URL from "./url"
+import {where} from "./private-utils"
+import {root, fullyQualify} from "../helpers/url"
 import {applyConfiguration} from "../lift"
 
 route53Primitive = (SDK) ->
   (configuration) ->
     route53 = applyConfiguration configuration, SDK.Route53
-    {root, fullyQualify} = URL()
 
     hzList = (current=[], marker) ->
       params = MaxItems: "100"

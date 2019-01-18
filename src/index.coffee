@@ -4,6 +4,7 @@
 
 import Base from "./lift-all"
 import Primatives from "./primitives"
+import Helpers from "./helpers"
 
 start = (engine) ->
   Object.defineProperties {},
@@ -15,3 +16,4 @@ start = (engine) ->
       get: -> Primatives @_AWS
 
 export default start
+export {Helpers}
