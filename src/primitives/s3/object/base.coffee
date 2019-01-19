@@ -19,17 +19,19 @@ Section = (s3) ->
     catch e
       notFound e
 
-  del = (name, key) ->
+  destroy = (name, key) ->
     try
       await s3.deleteObject {Bucket: name, Key: key}
     catch e
       notFound e
 
-  delBatch = (name, keys) ->
+  deleteBatch = (name, keys) ->
+    console.log "deleteBatch", {name, keys}
     await s3.deleteObjects
       Bucket: name
       Delete:
         Objects: (Key: key for key in keys)
+        Quiet: true
 
   list = (name, items=[], marker) ->
     p = {Bucket: name, MaxKeys: 1000}
@@ -42,6 +44,6 @@ Section = (s3) ->
     else
       cat items, Contents
 
-  {head, exists, get, del, delBatch, list}
+  {head, exists, get, delete: destroy, deleteBatch, list}
 
 export default Section

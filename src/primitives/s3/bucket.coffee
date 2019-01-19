@@ -66,7 +66,7 @@ Section = (s3, fns) ->
     await s3.putBucketWebsite params
 
 
-  bucketDel = (name) ->
+  bucketDelete = (name) ->
     try
       await s3.deleteBucket Bucket: name
     catch e
@@ -79,9 +79,10 @@ Section = (s3, fns) ->
   bucketEmpty = (name) ->
     items = await fns.list name
     keys = collect project "Key", items
-    await fns.delBatch name, batch for batch in partition 1000, keys
+    await fns.deleteBatch name, batch for batch from partition 1000, keys
 
 
-  {bucketExists, bucketHead, bucketTouch, bucketCreate, bucketSetACL, bucketSetCORS, bucketSetWebsite, bucketDel, bucketEmpty}
+
+  {bucketExists, bucketHead, bucketTouch, bucketCreate, bucketSetACL, bucketSetCORS, bucketSetWebsite, bucketDelete, bucketEmpty}
 
 export default Section
