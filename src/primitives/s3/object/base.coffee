@@ -26,7 +26,6 @@ Section = (s3) ->
       notFound e
 
   deleteBatch = (name, keys) ->
-    console.log "deleteBatch", {name, keys}
     await s3.deleteObjects
       Bucket: name
       Delete:
