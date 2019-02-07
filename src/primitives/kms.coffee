@@ -33,29 +33,9 @@ cognitoPrimitive = (SDK) ->
     removeAlias = (AliasName) ->
       await kms.deleteAlias {AliasName}
 
-    randomKey = (size, encoding="hex") ->
+    randomBytes = (size) ->
       {Plaintext} = await kms.generateRandom {NumberOfBytes: size}
-      switch encoding
-        when "buffer"
-          Plaintext
-        when "ascii", "hex", "utf8", "utf16le", "ucs2", "latin1", "binary", "hex"
-          Plaintext.toString encoding
-        when "base64"
-          # Omitting padding characters, per:
-          # https://tools.ietf.org/html/rfc4648#section-3.2
-          Plaintext.toString("base64")
-          .replace(/\=+$/, '')
-        when "base64padded"
-          Plaintext.toString("base64")
-        when "base64url"
-          # Based on RFC 4648's "base64url" mapping:
-          # https://tools.ietf.org/html/rfc4648#section-5
-          Plaintext.toString("base64")
-          .replace(/\+/g, '-')
-          .replace(/\//g, '_')
-          .replace(/\=+$/, '')
-        else
-          throw new Error "Unknown encoding #{encoding}."
+      new Uint8Array Plaintext
 
     encrypt = (id, plaintext, encoding="utf8", options={}) ->
       switch encoding
@@ -93,7 +73,7 @@ cognitoPrimitive = (SDK) ->
       CiphertextBlob.toString("base64")
 
 
-    {get, create, scheduleDelete, addAlias, removeAlias, randomKey, decrypt, encrypt, reEncrypt}
+    {get, create, scheduleDelete, addAlias, removeAlias, randomBytes, decrypt, encrypt, reEncrypt}
 
 
 export default cognitoPrimitive
