@@ -33,6 +33,7 @@ to =
   BOOL: _transform (b) -> BOOL: b
   # Extension of DynamoDB types to stringify objects. *Must always be named.*
   JSON: _transform (o) -> S: JSON.stringify o
+  SET: _transform (set) -> S: JSON.stringify Array.from set
 
 # This handles parsing on the data types native to DynamoDB, including recursive parsing on Maps.
 _parse = (attributes) ->
@@ -65,6 +66,8 @@ parse = curry (types, data) ->
       # Extensions
       when "JSON"
         JSON.parse value
+      when "SET"
+        new Set JSON.parse value
       else
         throw new Error "#{type} is not a known DynamoDB type or sundog extension."
   result
@@ -89,7 +92,7 @@ wrap = curry (types, data) ->
         when "M"
           if (isObject value) && (!empty keys value)
             out.push (merge to[type] [name]:value)
-        when "JSON"
+        when "JSON", "SET"
           unless empty JSON.stringify value
             out.push (merge to[type] [name]:value)
         else
