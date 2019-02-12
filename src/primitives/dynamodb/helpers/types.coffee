@@ -5,7 +5,8 @@
 # It expects data to be input that way, and includes it when fetched.
 # These helpers write and parse that type system.
 import {curry} from "panda-garden"
-import {empty, isBoolean, isObject, keys, values, first, merge} from "panda-parchment"
+import {empty, isBoolean, isObject, keys, values, first,
+  merge, isType} from "panda-parchment"
 
 _transform = (f) ->
   (x) ->
@@ -96,7 +97,7 @@ wrap = curry (types, data) ->
           unless empty JSON.stringify value
             out.push (merge to[type] [name]:value)
         when "SET"
-          unless value.size == 0
+          unless isType Set, value
             out.push (merge to[type] [name]:value)
         else
           throw new Error "Unable to wrap field '#{name}'. Unknown DyanmoDB data type, '#{type}'"
