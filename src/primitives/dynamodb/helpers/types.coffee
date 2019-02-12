@@ -92,8 +92,11 @@ wrap = curry (types, data) ->
         when "M"
           if (isObject value) && (!empty keys value)
             out.push (merge to[type] [name]:value)
-        when "JSON", "SET"
+        when "JSON"
           unless empty JSON.stringify value
+            out.push (merge to[type] [name]:value)
+        when "SET"
+          unless value.size == 0
             out.push (merge to[type] [name]:value)
         else
           throw new Error "Unable to wrap field '#{name}'. Unknown DyanmoDB data type, '#{type}'"
