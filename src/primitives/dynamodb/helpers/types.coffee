@@ -83,22 +83,22 @@ wrap = curry (types, data) ->
       switch type
         when "S", "SS", "L", "B", "NS", "BS"
           unless empty value
-            out.push (merge to[type] [name]:value)
+            out.push (to[type] [name]:value)
         when "N"
           unless Number.isNaN value
-            out.push (merge to[type] [name]:value)
+            out.push (to[type] [name]:value)
         when "BOOL", "NULL"
           if isBoolean value
-            out.push (merge to[type] [name]:value)
+            out.push (to[type] [name]:value)
         when "M"
           if (isObject value) && (!empty keys value)
-            out.push (merge to[type] [name]:value)
+            out.push (to[type] [name]:value)
         when "JSON"
           unless empty JSON.stringify value
-            out.push (merge to[type] [name]:value)
+            out.push (to[type] [name]:value)
         when "SET"
           unless isType Set, value
-            out.push (merge to[type] [name]:value)
+            out.push (to[type] [name]:value)
         else
           throw new Error "Unable to wrap field '#{name}'. Unknown DyanmoDB data type, '#{type}'"
   merge out...
