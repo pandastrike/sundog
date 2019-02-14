@@ -97,7 +97,7 @@ wrap = curry (types, data) ->
           unless empty JSON.stringify value
             out.push (to[type] [name]:value)
         when "SET"
-          unless isType Set, value
+          if isType Set, value
             out.push (to[type] [name]:value)
         else
           throw new Error "Unable to wrap field '#{name}'. Unknown DyanmoDB data type, '#{type}'"
