@@ -43,10 +43,32 @@ numberEx = (field, amount) -> "ADD #{field} #{qv to.N amount}"
 updateEx = curry ({key, types}, data) ->
   chunks = []
   for k, v of data when k not in key
+    continue unless v?
+
     type = types[k]
     throw new Error "#{k} does not have a type defined." if !type
+
     f = to[type]
+    throw new Error "bad type: #{type}" unless f?
+    
+    switch type
+      when "S", "SS", "L", "B", "NS", "BS"
+        continue if empty value
+      when "N"
+        continue if Number.isNaN value
+      when "BOOL", "NULL"
+        continue unless isBoolean value
+      when "M"
+        continue unless (isObject value) && (!empty keys value)
+      when "JSON"
+        continue if empty JSON.stringify value
+      when "SET"
+        continue unless isType Set, value
+      else
+        throw new Error "bad update type conversion"
+
     chunks.push "#{k} = #{qv f {k:v}}"
+
   if !empty chunks
     "SET #{chunks.join(", ")}"
   else
