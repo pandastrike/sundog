@@ -50,20 +50,20 @@ updateEx = curry ({key, types}, data) ->
 
     f = to[type]
     throw new Error "bad type: #{type}" unless f?
-    
+
     switch type
       when "S", "SS", "L", "B", "NS", "BS"
-        continue if empty value
+        continue if empty v
       when "N"
-        continue if Number.isNaN value
+        continue if Number.isNaN v
       when "BOOL", "NULL"
-        continue unless isBoolean value
+        continue unless isBoolean v
       when "M"
-        continue unless (isObject value) && (!empty keys value)
+        continue unless (isObject v) && (!empty keys v)
       when "JSON"
-        continue if empty JSON.stringify value
+        continue if empty JSON.stringify v
       when "SET"
-        continue unless isType Set, value
+        continue unless isType Set, v
       else
         throw new Error "bad update type conversion"
 
