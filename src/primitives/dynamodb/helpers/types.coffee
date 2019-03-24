@@ -70,7 +70,7 @@ parse = curry (types, data) ->
       when "SET"
         new Set JSON.parse value
       else
-        throw new Error "#{type} is not a known DynamoDB type or sundog extension."
+        throw new Error "For #{name}, #{type} is not a known DynamoDB type or sundog extension."
   result
 
 # Accept an incoming object to store in DynamoDB, rejecting fields that do not have a defined type or are not suitable for DynamoDB.

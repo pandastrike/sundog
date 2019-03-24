@@ -25,9 +25,11 @@ DynamoDB = (db) ->
 
       # default interface for the model. "key" is allowed to be just the key or the whole data object
       get: (key) ->
-        name = first definition.key
-        f = to[definition.types[name]]
-        {Items} = await query table, "#{name} = #{qv f [name]:key}"
+        chunks = []
+        for name in definition.key
+          f = to[definition.types[name]]
+          chunks.push "#{name} = #{qv f [name]:key}"
+        {Items} = await query table, (chunks.join " AND ")
         if empty Items
           false
         else
