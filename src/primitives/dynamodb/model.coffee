@@ -1,4 +1,4 @@
-import {empty, first} from "panda-parchment"
+import {empty, first, second} from "panda-parchment"
 import {to, wrap as _wrap, parse as _parse, getKey as _getKey} from "./helpers/types"
 import {numberEx, updateEx as _updateEx, dropEx, qv} from "./helpers/expressions"
 import Items from "./items"
@@ -24,12 +24,18 @@ DynamoDB = (db) ->
         await update table, (getKey key), (numberEx field, -1)
 
       # default interface for the model. "key" is allowed to be just the key or the whole data object
-      get: (key) ->
-        chunks = []
-        for name in definition.key
+      get: (key, sort) ->
+        name = first definition.key
+        f = to[definition.types[name]]
+        string = "#{name} = #{qv f [name]:key}"
+
+        # Deal with sort key. AND query is space-sensitive.
+        if sort
+          name = second definition.key
           f = to[definition.types[name]]
-          chunks.push "#{name} = #{qv f [name]:key}"
-        {Items} = await query table, (chunks.join " AND ")
+          string += " AND #{name} = #{qv f [name]:sort}"
+
+        {Items} = await query table, string
         if empty Items
           false
         else
