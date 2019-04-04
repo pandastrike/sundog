@@ -24,16 +24,10 @@ DynamoDB = (db) ->
         await update table, (getKey key), (numberEx field, -1)
 
       # default interface for the model. "key" is allowed to be just the key or the whole data object
-      get: (key, sort) ->
+      get: (key) ->
         name = first definition.key
         f = to[definition.types[name]]
         string = "#{name} = #{qv f [name]:key}"
-
-        # Deal with sort key. AND query is space-sensitive.
-        if sort
-          name = second definition.key
-          f = to[definition.types[name]]
-          string += " AND #{name} = #{qv f [name]:sort}"
 
         {Items} = await query table, string
         if empty Items
