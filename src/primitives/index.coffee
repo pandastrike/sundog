@@ -1,4 +1,5 @@
 import acm from "./acm"
+import asm from "./asm"
 import cloudformation from "./cloudformation"
 import cloudfront from "./cloudfront"
 import cloudwatchlogs from "./cloudwatchlogs"
@@ -19,6 +20,9 @@ Primitives = (_AWS) ->
     ACM:
       enumerable: true
       get: -> acm _AWS.SDK
+    ASM:
+      enumerable: true
+      get: -> asm _AWS.SDK
     CloudFormation:
       enumerable: true
       get: -> cloudformation _AWS.SDK
