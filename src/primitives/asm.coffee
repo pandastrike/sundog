@@ -1,4 +1,4 @@
-import {cat} from "panda-parchment"
+import {cat, fromJSON} from "panda-parchment"
 import {collect, project} from "panda-river"
 import {Method} from "panda-generics"
 import {applyConfiguration} from "../lift"
@@ -22,7 +22,7 @@ asmPrimitive = (SDK) ->
     read = (name) ->
         data = await asm.getSecretValue SecretId: name
         if data["SecretString"]?
-          data["SecretString"]
+          fromJSON data["SecretString"]
         else
           Buffer.from data.SecretBinary, 'base64'
 
