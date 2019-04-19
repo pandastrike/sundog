@@ -5,12 +5,14 @@ lambdaPrimitive = (SDK) ->
   (configuration) ->
     lambda = applyConfiguration configuration, SDK.Lambda
 
-    update = (name, bucket, key) ->
-      await lambda.updateFunctionCode
+    update = (name, bucket, key, options={}) ->
+      await lambda.updateFunctionCode merge
         FunctionName: name
-        Publish: true
+        Publish: false
         S3Bucket: bucket
         S3Key: key
+        ,
+        options
 
     updateConfig = (FunctionName, config) ->
       await lambda.updateFunctionConfiguration merge {FunctionName}, config
