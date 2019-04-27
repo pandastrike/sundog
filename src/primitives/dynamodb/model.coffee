@@ -5,8 +5,8 @@ import Items from "./items"
 import Queries from "./queries"
 
 DynamoDB = (db) ->
-  {get, put, del, update} = Items db
-  {query} = Queries db
+  {get: getItem, put:putItem, del:deleteItem, update:updateItem} = Items db
+  {query:Query} = Queries db
 
   Model = (definition) ->
     {table} = definition
@@ -15,34 +15,35 @@ DynamoDB = (db) ->
     getKey = _getKey definition
     updateEx = _updateEx definition
 
+    # default interface for the model. "key" is allowed to be just the key or the whole data object
+    get = (key) ->
+      await getItem table, getKey key
+    put = (data) ->
+      await putItem table, wrap data
+    del = (key) ->
+      await deleteItem table, getKey key
+    update = (key, data, drop) ->
+      await updateItem table, (getKey key), (updateEx data) + (dropEx drop)
+
+    # "key" is allowed to be just the key or the whole data object
+    increment = (key, field) ->
+      await updateItem table, (getKey key), (numberEx field, 1)
+    decrement = (key, field) ->
+      await updateItem table, (getKey key), (numberEx field, -1)
+
+    # Query interface for this table and its GSIs.
+    queryTable = (keyEx, filterEx, options) ->
+      await query table, filterEx, options
+    queryIndex = (index, keyEx, filterEx, options) ->
+      await query "#{table}:#{index}", keyEx, filterEx, options
+
+
     {
       parse, wrap, getKey
-      # "key" is allowed to be just the key or the whole data object
-      increment: (key, field) ->
-        await update table, (getKey key), (numberEx field, 1)
-      decrement: (key, field) ->
-        await update table, (getKey key), (numberEx field, -1)
-
-      # default interface for the model. "key" is allowed to be just the key or the whole data object
-      get: (key) ->
-        name = first definition.key
-        f = to[definition.types[name]]
-        string = "#{name} = #{qv f [name]:key}"
-
-        {Items} = await query table, string
-        if empty Items
-          false
-        else
-          parse first Items
-      put: (data) ->
-        await put table, wrap data
-      del: (key) ->
-        await del table, getKey key
-      update: (key, data, drop) ->
-        await update table, (getKey key), (updateEx data) + (dropEx drop)
+      get, put, del, update,
+      increment, decrement,
+      queryTable, queryIndex
     }
-
-
 
   {Model}
 
