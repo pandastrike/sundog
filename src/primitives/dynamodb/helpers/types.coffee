@@ -6,7 +6,9 @@
 # These helpers write and parse that type system.
 import {curry} from "panda-garden"
 import {empty, keys, values, first,
-  merge, include, isType, isBoolean, isObject, isSet, isArray} from "panda-parchment"
+  merge, include, isType, isBoolean, isObject, isArray} from "panda-parchment"
+
+isSet = isType Set
 
 _transform = (f) ->
   (x) ->

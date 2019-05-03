@@ -6,7 +6,7 @@ import Queries from "./queries"
 
 DynamoDB = (db) ->
   {get: getItem, put:putItem, del:deleteItem, update:updateItem} = Items db
-  {query:Query} = Queries db
+  {query} = Queries db
 
   Model = (definition) ->
     {table} = definition
@@ -17,7 +17,8 @@ DynamoDB = (db) ->
 
     # default interface for the model. "key" is allowed to be just the key or the whole data object
     get = (key) ->
-      await getItem table, getKey key
+      item = await getItem table, getKey key
+      if item? then parse item else false
     put = (data) ->
       await putItem table, wrap data
     del = (key) ->
