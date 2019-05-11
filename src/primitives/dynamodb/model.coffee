@@ -34,7 +34,7 @@ DynamoDB = (db) ->
 
     # Query interface for this table and its GSIs.
     queryTable = (keyEx, filterEx, options) ->
-      await query table, filterEx, options
+      await query table, keyEx, filterEx, options
     queryIndex = (index, keyEx, filterEx, options) ->
       await query "#{table}:#{index}", keyEx, filterEx, options
 
