@@ -13,6 +13,7 @@ import route53 from "./route53"
 import s3 from "./s3"
 import ses from "./ses"
 import sns from "./sns"
+import step from "./step"
 import sts from "./sts"
 
 Primitives = (_AWS) ->
@@ -62,6 +63,9 @@ Primitives = (_AWS) ->
     SNS:
       enumerable: true
       get: -> sns _AWS.SDK
+    StepFunctions:
+      enumerable: true
+      get: -> step _AWS.SDK
     STS:
       enumerable: true
       get: -> sts _AWS.SDK
