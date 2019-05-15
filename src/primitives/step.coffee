@@ -15,6 +15,21 @@ stepPrimitive = (SDK) ->
     stop = (arn, options) ->
       step.stopExecution merge {executionArn: arn}, options
 
+    listExes = (arn, status, current=[], next) ->
+      {nextToken, executions} = await step.listExecutions {
+        stateMachineArn: arn
+        statusFilter: status
+        maxResults: 1000
+        nextToken: next
+      }
+
+      current = cat current, executions
+      if nextToken
+        listExes arn, status, current, nextToken
+      else
+        current
+
+
     list = (current=[], next) ->
       {nextToken, stateMachines} = await step.listStateMachines
         maxResults: 1000
@@ -33,11 +48,14 @@ stepPrimitive = (SDK) ->
 
       false
 
+    stopAll = (name) ->
+      {stateMachineArn} = await lookup name
+      expressions = await listExes stateMachineArn, "RUNNING"
+      for {executionArn} in expressions
+        await stop executionArn
 
 
-
-
-    {start, stop, list, lookup}
+    {start, stop, list, lookup, listExes, stopAll}
 
 
 export default stepPrimitive

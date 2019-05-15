@@ -1,6 +1,6 @@
 {
   "name": "sundog",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Wrapper for the JavaScript AWS SDK, powered by Fairmont to give it a functional boost",
   "main": "build/npm/src/index.js",
   "files": [
