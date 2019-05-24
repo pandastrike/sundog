@@ -32,8 +32,9 @@ Section = (s3) ->
 
       put bucket, key, merge {Body, ContentType, ContentMD5}, options
 
-    buffer: (bucket, key, buffer, options={}) ->
-      put bucket, key, merge {Body}, options
+    buffer: (bucket, key, Body, options={}) ->
+      ContentMD5 = md5 Body
+      put bucket, key, merge {Body, ContentMD5}, options
 
 
   {PUT, put}
