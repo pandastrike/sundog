@@ -8,7 +8,7 @@ import {applyConfiguration} from "../lift"
 cloudfrontPrimitive = (SDK) ->
   (configuration) ->
     cfr = applyConfiguration configuration, SDK.CloudFront
-    {randomKey} = (KMS SDK) configuration
+    {randomBytes} = (KMS SDK) configuration
 
     list = (current=[], marker) ->
       params = MaxItems: "100"
@@ -41,7 +41,7 @@ cloudfrontPrimitive = (SDK) ->
       params =
         DistributionId: Id
         InvalidationBatch:
-          CallerReference: "Sky" + await randomKey 16
+          CallerReference: "Sky" + (await randomBytes 16).toString()
           Paths: {Quantity: 1, Items: ["/*"]}
 
       {Invalidation} = await cfr.createInvalidation params
