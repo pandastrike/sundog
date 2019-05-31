@@ -51,15 +51,16 @@ Section = (s3, fns) ->
       ContentMD5: ""
 
   bucketSetWebsite = (name, site, redirect) ->
-    params = Bucket: name
-    if site
-      params.WebsiteConfiguration = {}
-      if site.index?
-        params.WebsiteConfiguration.IndexDocument = Suffix: site.index
-      if site.error?
-        params.WebsiteConfiguration.ErrorDocument = Key: site.error
+    params =
+      Bucket: name
+      WebsiteConfiguration:
+        IndexDocument:
+          Suffix: site.index
+        ErrorDocument:
+          Key: site.error
+
     if redirect
-      params.RedirectAllRequestsTo =
+      params.WebsiteConfiguration.RedirectAllRequestsTo =
         HostName: redirect.host
         Protocol: redirect.protocol ? "https"
 
