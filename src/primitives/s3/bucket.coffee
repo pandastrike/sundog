@@ -53,16 +53,18 @@ Section = (s3, fns) ->
   bucketSetWebsite = (name, site, redirect) ->
     params =
       Bucket: name
-      WebsiteConfiguration:
+
+    if site
+      params.WebsiteConfiguration =
         IndexDocument:
           Suffix: site.index
         ErrorDocument:
           Key: site.error
-
-    if redirect
-      params.WebsiteConfiguration.RedirectAllRequestsTo =
-        HostName: redirect.host
-        Protocol: redirect.protocol ? "https"
+    else
+      params.WebsiteConfiguration =
+        RedirectAllRequestsTo:
+          HostName: redirect.host
+          Protocol: redirect.protocol ? "https"
 
     await s3.putBucketWebsite params
 
