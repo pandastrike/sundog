@@ -37,12 +37,13 @@ cloudfrontPrimitive = (SDK) ->
       else
         hoistETag await cfr.getDistribution Id: matches[0].Id
 
-    invalidate = ({Id}) ->
+    invalidate = ({Id}, paths) ->
+      paths ?= ["/*"]
       params =
         DistributionId: Id
         InvalidationBatch:
           CallerReference: "Sky" + (await randomBytes 16).toString()
-          Paths: {Quantity: 1, Items: ["/*"]}
+          Paths: {Quantity: paths.length, Items: paths}
 
       {Invalidation} = await cfr.createInvalidation params
       params = {DistributionId: Id, Id: Invalidation.Id}
