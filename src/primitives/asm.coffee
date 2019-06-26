@@ -1,6 +1,5 @@
 import {cat, fromJSON} from "panda-parchment"
 import {collect, project} from "panda-river"
-import {Method} from "panda-generics"
 import {applyConfiguration} from "../lift"
 
 asmPrimitive = (SDK) ->
