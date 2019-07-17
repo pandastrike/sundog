@@ -1,4 +1,4 @@
-import {first, sleep, cat} from "panda-parchment"
+import {first, sleep, cat, empty} from "panda-parchment"
 import {collect} from "panda-river"
 import {where} from "./private-utils"
 import {applyConfiguration} from "../lift"
@@ -13,10 +13,18 @@ cloudformationPrimitive = (SDK) ->
       catch
         false
 
-    output = (OutputKey, StackName) ->
-      data = await cfo.describeStacks {StackName}
-      outputs = collect where {OutputKey}, data.Stacks[0].Outputs
-      outputs[0].OutputValue
+    outputs = (name) ->
+      if stack = await get name
+        stack.Outputs
+      else
+        throw new Error "unable to find stack #{name}"
+
+    output = (OutputKey, stack) ->
+      results = collect where {OutputKey}, await outputs stack
+      if empty results
+        throw new Error "Unable to find output #{OutputKey} on stack #{stack}"
+      else
+        (first results).OutputValue
 
     # Confirm the stack is viable and online.
     publishWait = (name) ->
@@ -55,6 +63,18 @@ cloudformationPrimitive = (SDK) ->
       await cfo.updateStack stack
       await publishWait stack.StackName
 
+    _put = (stack) ->
+      try
+        await update stack
+      catch e
+        throw e unless (e.name == "ValidationError") && (e.message == "No updates are to be performed.")
+
+    put = (stack) ->
+      if await get stack.StackName
+        await _put stack
+      else
+        await create stack
+
     destroy = (StackName) ->
       return if !(await get StackName)
       await cfo.deleteStack {StackName}
@@ -75,11 +95,13 @@ cloudformationPrimitive = (SDK) ->
 
     {
       get
+      outputs
       output
       publishWait
       deleteWait
       create
       update
+      put
       delete: destroy
       list
       validStatuses

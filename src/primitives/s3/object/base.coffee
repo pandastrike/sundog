@@ -1,6 +1,7 @@
+import {flow} from "panda-garden"
 import {cat} from "panda-parchment"
+import {collect, project, partition} from "panda-river"
 import {notFound} from "../../private-utils"
-
 
 Section = (s3) ->
   head = exists = (name, key) ->
@@ -19,30 +20,35 @@ Section = (s3) ->
     catch e
       notFound e
 
-  destroy = (name, key) ->
+  rm = (name, key) ->
     try
       await s3.deleteObject {Bucket: name, Key: key}
     catch e
       notFound e
 
-  deleteBatch = (name, keys) ->
+  rmBatch = (name, keys) ->
     await s3.deleteObjects
       Bucket: name
       Delete:
         Objects: (Key: key for key in keys)
         Quiet: true
 
-  list = (name, items=[], marker) ->
-    p = {Bucket: name, MaxKeys: 1000}
+  list = (name, prefix, items=[], marker) ->
+    p = Bucket: name, MaxKeys: 1000
     p.ContinuationToken = marker if marker
+    p.Prefix = prefix if prefix
 
     {IsTruncated, Contents, NextContinuationToken} = await s3.listObjectsV2 p
     if IsTruncated
       items = cat items, Contents
-      await list name, items, NextContinuationToken
+      await list name, prefix, items, NextContinuationToken
     else
       cat items, Contents
 
-  {head, exists, get, delete: destroy, deleteBatch, list}
+  rmDir = (name, prefix) ->
+    keys = collect project "Key", await list name, prefix
+    await rmBatch name, batch for batch from partition 1000, keys
+
+  {head, exists, get, rm, rmBatch, list, rmDir}
 
 export default Section

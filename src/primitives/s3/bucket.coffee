@@ -75,16 +75,7 @@ Section = (s3, fns) ->
     catch e
       notFound e
 
-
-  # TODO: make this more efficient by throttling to X connections at once. AWS
-  # only supports N requests per second from an account, and I don't want this
-  # to violate that limit, but we can do better than one at a time.
-  bucketEmpty = (name) ->
-    items = await fns.list name
-    keys = collect project "Key", items
-    await fns.deleteBatch name, batch for batch from partition 1000, keys
-
-
+  bucketEmpty = fns.rmDir
 
   {bucketExists, bucketHead, bucketTouch, bucketCreate, bucketSetACL, bucketSetCORS, bucketSetWebsite, bucketDelete, bucketEmpty}
 
