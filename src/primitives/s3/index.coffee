@@ -9,9 +9,10 @@ import {applyConfiguration} from "../../lift"
 s3Primitive = (SDK) ->
   (configuration) ->
     s3 = applyConfiguration configuration, SDK.S3
+    rawS3 = new SDK.S3 configuration
 
     output = {}
-    include output, Objects s3
+    include output, Objects s3, rawS3
     include output, Buckets s3, output
     output
 

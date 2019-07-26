@@ -3,15 +3,33 @@
 # on the s3 object put feature.
 
 import mime from "mime"
+import ProgressBar from "progress"
 import {merge} from "panda-parchment"
 import {read} from "panda-quill"
 
 import {md5} from "../helpers"
 
-Section = (s3) ->
+Section = (s3, rawS3) ->
 
   put = (Bucket, Key, options) ->
     await s3.putObject merge {Bucket, Key}, options
+
+  upload = (Bucket, Key, options) ->
+    new Promise (resolve, reject) ->
+      current = 0
+      bar = new ProgressBar "uploaded :size MB [:bar] :percent ",
+        total: options.Body.length
+        complete: "="
+        incomplete: " "
+        width: 20
+
+      rawS3.upload merge {Bucket, Key}, options
+      .on "httpUploadProgress", ({loaded}) ->
+        bar.tick (loaded - current),
+          size: (loaded / 1e6).toFixed 3
+        current = loaded
+      .send (error, result) -> if error? then reject error else resolve result
+
 
   PUT =
     string: (bucket, key, text, options={}) ->
@@ -21,16 +39,16 @@ Section = (s3) ->
 
     file: (bucket, key, path, options={}) ->
       ContentType = options.ContentType ? mime.getType path
-
-      Body =
-        if /^text\//.test ContentType
-          Buffer.from await read path
-        else
-          await read path, "buffer"
-
+      Body = await read path, "buffer"
       ContentMD5 = md5 Body
 
       put bucket, key, merge {Body, ContentType, ContentMD5}, options
+
+    fileWithProgress: (bucket, key, path, options={}) ->
+      ContentType = options.ContentType ? mime.getType path
+      Body = await read path, "buffer"
+
+      upload bucket, key, merge {Body, ContentType}, options
 
     buffer: (bucket, key, Body, options={}) ->
       ContentMD5 = md5 Body

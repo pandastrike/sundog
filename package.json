@@ -41,7 +41,8 @@
     "panda-generics": "^4.2.0",
     "panda-parchment": "^4.2.0",
     "panda-quill": "^3.4.1",
-    "panda-river": "^4.4.0"
+    "panda-river": "^4.4.0",
+    "progress": "^2.0.3"
   },
   "devDependencies": {
     "panda-9000": "^4.4.0",

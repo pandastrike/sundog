@@ -1,4 +1,4 @@
-import {cat, merge} from "panda-parchment"
+import {cat, merge, toJSON} from "panda-parchment"
 import {applyConfiguration} from "../lift"
 
 lambdaPrimitive = (SDK) ->
@@ -28,22 +28,21 @@ lambdaPrimitive = (SDK) ->
       else
         fns
 
+    get = (name) -> lambda.getFunction FunctionName:name
+
     Delete = (name) -> await lambda.deleteFunction FunctionName: name
 
-    invoke = (FunctionName, input, options) ->
-      params = {
-        FunctionName
-        Payload: JSON.stringify input
-      }
-      params = merge params, options
-      await lambda.invoke params
+    invoke = (name, input, options) ->
+      lambda.invoke merge
+        FunctionName: name
+        Payload: toJSON input
+        options
 
     asyncInvoke = (name, input, options) ->
-      options = merge options, {InvocationType: "Event"}
-      invoke name, input, options
+      invoke name, input, merge options, InvocationType: "Event"
 
 
-    {update, updateConfig, list, delete:Delete, invoke, asyncInvoke}
+    {update, updateConfig, list, get, delete:Delete, invoke, asyncInvoke}
 
 
 export default lambdaPrimitive

@@ -9,14 +9,14 @@ import ACL from "./acl"
 import Multipart from "./multipart"
 import Sign from "./signature"
 
-Section = (s3) ->
+Section = (s3, rawS3) ->
 
   output = {}
   include output, Base s3
-  include output, Put s3, output
+  include output, Put s3, rawS3
   include output, ACL s3, output
-  include output, Multipart s3, output
-  include output, Sign s3, output
+  include output, Multipart s3
+  include output, Sign s3
   output
 
 export default Section
