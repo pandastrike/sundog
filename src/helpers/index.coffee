@@ -1,3 +1,6 @@
 import url from "./url"
 
-export default {url}
+Helpers = {url}
+
+export {url}
+export default Helpers

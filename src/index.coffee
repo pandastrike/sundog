@@ -13,7 +13,7 @@ start = (engine) ->
       get: -> Base engine
     AWS:
       enumerable: true
-      get: -> Primatives @_AWS
+      get: -> Primatives @_AWS, engine
 
 export default start
 export {Helpers}

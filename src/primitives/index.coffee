@@ -17,7 +17,7 @@ import sqs from "./sqs"
 import step from "./step"
 import sts from "./sts"
 
-Primitives = (_AWS) ->
+Primitives = (_AWS, rawSDK) ->
   Object.defineProperties {},
     ACM:
       enumerable: true
@@ -57,7 +57,7 @@ Primitives = (_AWS) ->
       get: -> route53 _AWS.SDK
     S3:
       enumerable: true
-      get: -> s3 _AWS.SDK
+      get: -> s3 _AWS.SDK, rawSDK
     SES:
       enumerable: true
       get: -> ses _AWS.SDK

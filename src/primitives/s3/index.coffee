@@ -6,10 +6,10 @@ import Objects from "./object"
 import Buckets from "./bucket"
 import {applyConfiguration} from "../../lift"
 
-s3Primitive = (SDK) ->
+s3Primitive = (SDK, rawSDK) ->
   (configuration) ->
     s3 = applyConfiguration configuration, SDK.S3
-    rawS3 = new SDK.S3 configuration
+    rawS3 = new rawSDK.S3 configuration
 
     output = {}
     include output, Objects s3, rawS3

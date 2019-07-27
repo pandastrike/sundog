@@ -27,5 +27,7 @@ root = (url) ->
   catch e
     throw new Error "Failed to parse root url: #{e}"
 
-export default {fullyQualify, regularlyQualify, root}
+URL = {fullyQualify, regularlyQualify, root}
+
 export {fullyQualify, regularlyQualify, root}
+export default URL
