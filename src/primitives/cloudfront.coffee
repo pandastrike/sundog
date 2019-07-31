@@ -37,7 +37,7 @@ cloudfrontPrimitive = (SDK) ->
       else
         hoistETag await cfr.getDistribution Id: matches[0].Id
 
-    invalidate = ({Id}, paths) ->
+    issueInvalidation = ({Id}, paths) ->
       paths ?= ["/*"]
       params =
         DistributionId: Id
@@ -46,14 +46,17 @@ cloudfrontPrimitive = (SDK) ->
           Paths: {Quantity: paths.length, Items: paths}
 
       {Invalidation} = await cfr.createInvalidation params
-      params = {DistributionId: Id, Id: Invalidation.Id}
+      Invalidation
+
+    invalidate = (distribution, paths) ->
+      {Id} = await issueInvalidation distribution, paths
+      params = {DistributionId: distribution.Id, Id}
 
       while true
         {Invalidation: {Status}} = await cfr.getInvalidation params
         if Status == "Completed" then return else await sleep 15000
 
 
-
-    {list, get, invalidate}
+    {list, get, issueInvalidation, invalidate}
 
 export default cloudfrontPrimitive
