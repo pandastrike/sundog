@@ -69,6 +69,11 @@ Section = (s3, fns) ->
     await s3.putBucketWebsite params
 
 
+  bucketSetPolicy = (Bucket, Policy, options={}) ->
+    await s3.putBucketPolicy merge {Bucket, Policy}, options
+
+
+
   bucketDelete = (name) ->
     try
       await s3.deleteBucket Bucket: name
@@ -77,6 +82,6 @@ Section = (s3, fns) ->
 
   bucketEmpty = fns.rmDir
 
-  {bucketExists, bucketHead, bucketTouch, bucketCreate, bucketSetACL, bucketSetCORS, bucketSetWebsite, bucketDelete, bucketEmpty}
+  {bucketExists, bucketHead, bucketTouch, bucketCreate, bucketSetACL, bucketSetCORS, bucketSetWebsite, bucketSetPolicy, bucketDelete, bucketEmpty}
 
 export default Section

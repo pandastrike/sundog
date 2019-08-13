@@ -5,6 +5,9 @@ lambdaPrimitive = (SDK) ->
   (configuration) ->
     lambda = applyConfiguration configuration, SDK.Lambda
 
+    create = (params) ->
+      await lambda.createFunction params
+
     update = (name, bucket, key, options={}) ->
       await lambda.updateFunctionCode merge
         FunctionName: name
@@ -28,7 +31,30 @@ lambdaPrimitive = (SDK) ->
       else
         fns
 
-    get = (name) -> lambda.getFunction FunctionName:name
+    listVersions = (name, results=[], marker) ->
+      {Versions, NextMarker} = await lambda.listVersionsByFunction
+        FunctionName: name
+        Marker: marker
+
+      results = cat results, Versions
+
+      if NextMarker?
+        listVersions name, results, NextMarker
+      else
+        results
+
+
+
+
+
+    get = (name) ->
+      try
+        await lambda.getFunction FunctionName:name
+      catch
+        false
+
+    publish = (FunctionName, options={}) ->
+      await lambda.publishVersion merge {FunctionName}, options
 
     Delete = (name) -> await lambda.deleteFunction FunctionName: name
 
@@ -42,7 +68,7 @@ lambdaPrimitive = (SDK) ->
       invoke name, input, merge options, InvocationType: "Event"
 
 
-    {update, updateConfig, list, get, delete:Delete, invoke, asyncInvoke}
+    {create, update, updateConfig, get, publish, list, listVersions, delete:Delete, invoke, asyncInvoke}
 
 
 export default lambdaPrimitive

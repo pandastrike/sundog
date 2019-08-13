@@ -6,6 +6,7 @@ import cloudwatchlogs from "./cloudwatchlogs"
 import cognito from "./cognito"
 import dynamodb from "./dynamodb"
 import ec2 from "./ec2"
+import iam from "./iam"
 import kms from "./kms"
 import lambda from "./lambda"
 import neptune from "./neptune"
@@ -43,6 +44,9 @@ Primitives = (_AWS, rawSDK) ->
     EC2:
       enumerable: true
       get: -> ec2 _AWS.SDK
+    IAM:
+      enumerable: true
+      get: -> iam _AWS.SDK
     KMS:
       enumerable: true
       get: -> kms _AWS.SDK
