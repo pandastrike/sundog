@@ -1,15 +1,13 @@
 {
   "name": "sundog",
-  "version": "5.0.2",
+  "version": "6.0.0",
   "description": "Wrapper for the JavaScript AWS SDK, powered by Fairmont to give it a functional boost",
   "main": "build/npm/src/index.js",
   "files": [
     "build/npm/src",
     "LICENSE"
   ],
-  "scripts": {
-    "test": "gulp npm:test"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pandastrike/sundog.git"
@@ -36,16 +34,16 @@
   },
   "homepage": "https://github.com/pandastrike/sundog#readme",
   "dependencies": {
-    "mime": "^2.0.3",
-    "panda-garden": "^3.4.0",
-    "panda-generics": "^4.2.0",
-    "panda-parchment": "^4.2.1",
-    "panda-quill": "^3.4.1",
-    "panda-river": "^4.4.0",
+    "mime": "^2.4.4",
+    "panda-garden": "^4.0.0",
+    "panda-generics": "^6.0.0",
+    "panda-parchment": "^5.0.0",
+    "panda-quill": "^4.0.0",
+    "panda-river": "^5.0.0",
     "progress": "^2.0.3"
   },
   "devDependencies": {
-    "panda-9000": "^4.4.0",
-    "panda-builder": "^3.2.1"
+    "panda-9000": "^5.0.0",
+    "panda-builder": "^4.0.0"
   }
 }
