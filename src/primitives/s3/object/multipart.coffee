@@ -19,8 +19,8 @@ Section = (s3) ->
     name: "multipartPut"
     description: "uploads a part within an S3 multipart upload flow"
     default: (args...) ->
-    throw new Error "sundog:s3:multipartPut -
-      no match on #{JSON.stringify args}"
+      throw new Error "sundog:s3:multipartPut -
+        no match on #{JSON.stringify args}"
 
   # Putting a buffer of raw data to S3
   Method.define multipartPut, isString, isString, isString, isString, isBuffer, isString,
