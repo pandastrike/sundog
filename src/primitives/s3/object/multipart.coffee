@@ -1,6 +1,6 @@
 import {merge, isString, isBuffer} from "panda-parchment"
 import {read} from "panda-quill"
-import {Method} from "panda-generics"
+import Method from "panda-generics"
 import mime from "mime"
 import {md5} from "../helpers"
 
@@ -15,7 +15,10 @@ Section = (s3) ->
   multipartComplete = (Bucket, Key, UploadId, MultipartUpload) ->
     await s3.completeMultipartUpload {Bucket, Key, UploadId, MultipartUpload}
 
-  multipartPut = Method.create default: (args...) ->
+  multipartPut = Method.create
+    name: "multipartPut"
+    description: "uploads a part within an S3 multipart upload flow"
+    default: (args...) ->
     throw new Error "sundog:s3:multipartPut -
       no match on #{JSON.stringify args}"
 

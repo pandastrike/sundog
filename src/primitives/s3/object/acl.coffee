@@ -1,10 +1,13 @@
-import {Method} from "panda-generics"
+import Method from "panda-generics"
 import {merge, isString, isObject} from "panda-parchment"
 
 Section = (s3, fns) ->
-  putACL = Method.create default: (args...) ->
-    throw new Error "sundog:s3:putACL -
-      no match on #{JSON.stringify args}"
+  putACL = Method.create
+    name: "putACL"
+    descripton: "Applies an ACL to an S3 bucket."
+    default: (args...) ->
+      throw new Error "sundog:s3:putACL -
+        no match on #{JSON.stringify args}"
 
   # Putting a buffer of raw data to S3
   Method.define putACL, isString, isString, isString, isObject,

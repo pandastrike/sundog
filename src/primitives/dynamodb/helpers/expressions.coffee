@@ -1,6 +1,6 @@
 # Expression helpers make it easier to write the arcane string DSL that DynamoDB wants to achieve complex operations.
 import {curry} from "panda-garden"
-import {Method} from "panda-generics"
+import Method from "panda-generics"
 import {first, values, isFunction, isObject, empty} from "panda-parchment"
 import {to} from "./types"
 
@@ -31,9 +31,12 @@ _qv = (o) ->
   else
     throw new Error "Unable to create stringified query value for unrecongied object #{JSON.stringify o}"
 
-qv = Method.create default: (args...) ->
-  console.error "sundog:dynamodb:qv, unable to match to method on", args
-  throw new Error()
+qv = Method.create
+  name: "qv"
+  description: "Converts a value into a DynamoDB query string with reference"
+  default: (args...) ->
+    console.error "sundog:dynamodb:qv, unable to match to method on", args
+    throw new Error()
 Method.define qv, isFunction, (f) -> (x) -> _qv f x
 Method.define qv, isObject, (o) -> _qv o
 
