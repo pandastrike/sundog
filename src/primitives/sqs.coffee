@@ -1,10 +1,22 @@
 # Primitives for the service SNS (simple notificaiton service).
-import {applyConfiguration} from "../lift"
+import {prepareModule} from "../lift"
 import {include, isString, isArray, isObject} from "panda-parchment"
 
-sqsPrimitive = (SDK) ->
+sqsPrimitive = (options) ->
   (configuration) ->
-    sqs = applyConfiguration configuration, SDK.SQS
+    sqs = prepareModule options, configuration,
+      require("aws-sdk/clients/sqs"),
+      [
+        "getQueueUrl"
+        "createQueue"
+        "deleteQueue"
+        "purgeQueue"
+        "sendMessage"
+        "sendMessageBatch"
+        "receiveMessage"
+        "deleteMessage"
+        "deleteMessageBatch"
+      ]
 
     getURL = (name) ->
       {QueueUrl} = await sqs.getQueueUrl QueueName: name

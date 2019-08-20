@@ -2,11 +2,16 @@ import {empty, isString} from "panda-parchment"
 import {collect} from "panda-river"
 import {where} from "./private-utils"
 import {root, regularlyQualify} from "../helpers/url"
-import {applyConfiguration} from "../lift"
+import {prepareModule} from "../lift"
 
-acmPrimitive = (SDK) ->
+acmPrimitive = (options) ->
   (configuration) ->
-    acm = applyConfiguration configuration, SDK.ACM
+    acm = prepareModule options, configuration,
+      require("aws-sdk/clients/acm"),
+      [
+        "liftCertificates"
+        "describeCertificate"
+      ]
 
     wild = (name) -> regularlyQualify "*." + root name
     apex = (name) -> regularlyQualify root name

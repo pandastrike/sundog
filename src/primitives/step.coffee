@@ -1,10 +1,18 @@
 # Primitives for the service StepFunctions.
 import {toJSON, merge, cat} from "panda-parchment"
-import {applyConfiguration} from "../lift"
+import {prepareModule} from "../lift"
 
-stepPrimitive = (SDK) ->
+stepPrimitive = (options) ->
   (configuration) ->
-    step = applyConfiguration configuration, SDK.StepFunctions
+    step = prepareModule options, configuration,
+      require("aws-sdk/clients/stepfunctions"),
+      [
+        "startExecution"
+        "stopExecution"
+        "listExecutions"
+        "listStateMachines"
+      ]
+
 
     start = (arn, input, name) ->
       step.startExecution

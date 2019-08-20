@@ -1,11 +1,22 @@
 import {include} from "panda-parchment"
-import {applyConfiguration} from "../../lift"
+import {prepareModule} from "../../lift"
 import Base from "./base"
 import OriginAccess from "./origin-access"
 
-cloudfrontPrimitive = (SDK) ->
+cloudfrontPrimitive = (options) ->
   (configuration) ->
-    cf = applyConfiguration configuration, SDK.CloudFront
+    cf = prepareModule options, configuration,
+      require("aws-sdk/clients/cloudfront"),
+      [
+        "listDistributions"
+        "getDistribution"
+        "createInvalidation"
+        "getInvalidation"
+        "listCloudFrontOriginAccessIdentities"
+        "createCloudFrontOriginAccessIdentity"
+        "getCloudFrontOriginAccessIdentity"
+        "deleteCloudFrontOriginAccessIdentity"
+      ]
 
     output = {}
     include output, Base cf

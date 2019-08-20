@@ -3,11 +3,23 @@
 
 import {cat, merge} from "panda-parchment"
 import {notFound} from "./private-utils"
-import {applyConfiguration} from "../lift"
+import {prepareModule} from "../lift"
 
-cognitoPrimitive = (SDK) ->
+cognitoPrimitive = (options) ->
   (configuration) ->
-    kms = applyConfiguration configuration, SDK.KMS
+    kms = prepareModule options, configuration,
+      require("aws-sdk/clients/kms"),
+      [
+        "describeKey"
+        "createKey"
+        "scheduleKeyDeletion"
+        "createAlias"
+        "deleteAlias"
+        "generateRandom"
+        "encrypt"
+        "decrypt"
+        "reEncrypt"
+      ]
 
     get = (id, tokens) ->
       try
@@ -25,7 +37,7 @@ cognitoPrimitive = (SDK) ->
     scheduleDelete = (id, delay) ->
       params = KeyId: id
       params.PendingWindowInDays = delay if delay
-      await kms.deleteKey params
+      await kms.scheduleKeyDeletion params
 
     addAlias = (TargetKeyId, AliasName) ->
       await kms.createAlias {TargetKeyId, AliasName}

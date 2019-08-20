@@ -1,4 +1,4 @@
-import {isFunction, bind} from "panda-parchment"
+import {merge, isFunction, bind} from "panda-parchment"
 
 promise = (f) -> new Promise f
 
@@ -21,10 +21,17 @@ liftService = (s) ->
     service[k] = if isFunction v then lift bind v, s else v
   service
 
-applyConfiguration = (configuration, service) ->
-  if configuration
-    liftService new service configuration
-  else
-    liftService new service()
+prepareModule = (options={}, configuration={}, service, methodList) ->
+  instance = new service merge options, configuration
 
-export {liftService, applyConfiguration}
+  for name in methodList
+    try
+      instance[name] = lift bind instance[name], instance
+    catch e
+      console.error "Sundog lift failure #{instance.constructor.name} #{name}"
+      console.error e
+      throw new Error()
+
+  instance
+
+export {lift, liftService, prepareModule}

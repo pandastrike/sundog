@@ -1,9 +1,21 @@
 import {cat, merge, toJSON} from "panda-parchment"
-import {applyConfiguration} from "../lift"
+import {prepareModule} from "../lift"
 
-lambdaPrimitive = (SDK) ->
+lambdaPrimitive = (options) ->
   (configuration) ->
-    lambda = applyConfiguration configuration, SDK.Lambda
+    lambda = prepareModule options, configuration,
+      require("aws-sdk/clients/lambda"),
+      [
+        "createFunction"
+        "updateFunctionCode"
+        "updateFunctionConfiguration"
+        "listFunctions"
+        "listVersionsByFunction"
+        "getFunction"
+        "publishVersion"
+        "deleteFunction"
+        "invoke"
+      ]
 
     create = (params) ->
       await lambda.createFunction params

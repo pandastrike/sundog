@@ -1,9 +1,13 @@
 # Primitives for the service SNS (simple notificaiton service).
-import {applyConfiguration} from "../lift"
+import {prepareModule} from "../lift"
 
-snsPrimitive = (SDK) ->
+snsPrimitive = (options) ->
   (configuration) ->
-    sns = applyConfiguration configuration, SDK.SNS
+    sns = prepareModule options, configuration,
+      require("aws-sdk/clients/sns"),
+      [
+        "publish"
+      ]
 
     sendSMS = (PhoneNumber, Message) ->
       await sns.publish {PhoneNumber, Message}

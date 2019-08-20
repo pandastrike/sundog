@@ -5,11 +5,10 @@
 import mime from "mime"
 import ProgressBar from "progress"
 import {merge} from "panda-parchment"
-import {read} from "panda-quill"
 
-import {md5} from "../helpers"
+import {md5, read} from "../helpers"
 
-Section = (s3, rawS3) ->
+Section = (s3) ->
 
   put = (Bucket, Key, options) ->
     await s3.putObject merge {Bucket, Key}, options
@@ -23,7 +22,7 @@ Section = (s3, rawS3) ->
         incomplete: " "
         width: 20
 
-      rawS3.upload merge {Bucket, Key}, options
+      s3.upload merge {Bucket, Key}, options
       .on "httpUploadProgress", ({loaded}) ->
         bar.tick (loaded - current),
           size: (loaded / 1e6).toFixed 3
@@ -39,14 +38,14 @@ Section = (s3, rawS3) ->
 
     file: (bucket, key, path, options={}) ->
       ContentType = options.ContentType ? mime.getType path
-      Body = await read path, "buffer"
+      Body = await read path
       ContentMD5 = md5 Body
 
       put bucket, key, merge {Body, ContentType, ContentMD5}, options
 
     fileWithProgress: (bucket, key, path, options={}) ->
       ContentType = options.ContentType ? mime.getType path
-      Body = await read path, "buffer"
+      Body = await read path
 
       upload bucket, key, merge {Body, ContentType}, options
 

@@ -3,11 +3,18 @@
 # prefixed "group*", whereas streams methods will have no prefix.
 
 import {cat, empty} from "panda-parchment"
-import {applyConfiguration} from "../lift"
+import {prepareModule} from "../lift"
 
-cloudwatchPrimitive = (SDK) ->
+cloudwatchPrimitive = (options) ->
   (configuration) ->
-    logs = applyConfiguration configuration, SDK.CloudWatchLogs
+    logs = prepareModule options, configuration,
+      require("aws-sdk/clients/cloudwatchlogs"),
+      [
+        "describeLogGroups"
+        "describeLogStreams"
+        "getLogEvents"
+        "createLogGroup"
+      ]
 
     # Returns data on a group or groups given an input prefix.
     groupList = (prefix, current=[], token) ->

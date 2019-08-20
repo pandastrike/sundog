@@ -1,15 +1,23 @@
 import {first, sleep, cat, empty} from "panda-parchment"
 import {collect} from "panda-river"
 import {where} from "./private-utils"
-import {applyConfiguration} from "../lift"
+import {prepareModule} from "../lift"
 
-cloudformationPrimitive = (SDK) ->
+cloudformationPrimitive = (options) ->
   (configuration) ->
-    cfo = applyConfiguration configuration, SDK.CloudFormation
+    cf = prepareModule options, configuration,
+      require("aws-sdk/clients/cloudformation"),
+      [
+        "describeStacks"
+        "createStack"
+        "updateStack"
+        "deleteStack"
+        "listStacks"
+      ]
 
     get = (StackName) ->
       try
-        first (await cfo.describeStacks({StackName})).Stacks
+        first (await cf.describeStacks({StackName})).Stacks
       catch
         false
 
@@ -56,11 +64,11 @@ cloudformationPrimitive = (SDK) ->
             """
 
     create = (stack) ->
-      await cfo.createStack stack
+      await cf.createStack stack
       await publishWait stack.StackName
 
     update = (stack) ->
-      await cfo.updateStack stack
+      await cf.updateStack stack
       await publishWait stack.StackName
 
     _put = (stack) ->
@@ -77,14 +85,14 @@ cloudformationPrimitive = (SDK) ->
 
     destroy = (StackName) ->
       return if !(await get StackName)
-      await cfo.deleteStack {StackName}
+      await cf.deleteStack {StackName}
       await deleteWait StackName
 
     list = (current=[], token) ->
       params = StackStatusFilter: validStatuses
       params.NextToken = token if token
 
-      {NextToken, StackSummaries} = await cfo.listStacks params
+      {NextToken, StackSummaries} = await cf.listStacks params
       if NextToken
         await list cat(current, StackSummaries), NextToken
       else

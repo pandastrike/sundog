@@ -1,15 +1,20 @@
 import {cat, fromJSON} from "panda-parchment"
 import {collect, project} from "panda-river"
-import {applyConfiguration} from "../lift"
+import {prepareModule} from "../lift"
 
-asmPrimitive = (SDK) ->
+asmPrimitive = (options) ->
   (configuration) ->
-    asm = applyConfiguration configuration, SDK.SecretsManager
+    asm = prepareModule options, configuration,
+      require("aws-sdk/clients/secretsmanager"),
+      [
+        "listSecrets"
+        "getSecretValue"
+      ]
 
     list = (items=[], marker) ->
       parameters = if marker? then {NextToken: marker} else {}
 
-      {SecretList, NextToken} = await asm.llistSecrets parameters
+      {SecretList, NextToken} = await asm.listSecrets parameters
       items = cat items, SecretList
       if NextToken?
         await list items, NextToken

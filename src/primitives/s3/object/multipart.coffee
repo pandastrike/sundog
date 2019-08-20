@@ -1,8 +1,7 @@
 import {merge, isString, isBuffer} from "panda-parchment"
-import {read} from "panda-quill"
 import Method from "panda-generics"
 import mime from "mime"
-import {md5} from "../helpers"
+import {md5, read} from "../helpers"
 
 
 Section = (s3) ->
@@ -41,13 +40,13 @@ Section = (s3) ->
   Method.define multipartPut, isString, isString, isString, isString, isString
   (Bucket, Key, UploadId, PartNumber, path) ->
     multipartPut Bucket, Key, UploadId, PartNumber,
-      (await read path, "buffer"), (mime.getType path)
+      (await read path), (mime.getType path)
 
   # Putting a file on disk to S3, with type override
   Method.define multipartPut, isString, isString, isString, isString, isString
   (Bucket, Key, UploadId, PartNumber, path) ->
     multipartPut Bucket, Key, UploadId, PartNumber,
-      (await read file.path, "buffer"), file.type
+      (await read file.path), file.type
 
   {multipartStart, multipartAbort, multipartComplete, multipartPut}
 

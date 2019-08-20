@@ -19,7 +19,7 @@ Section = (s3, fns) ->
     await sleep 20000 # race condition with S3 API.  Wait to be available.
 
   bucketCreate = (name, options={}) ->
-    await s3.create merge {Bucket: name}, options
+    await s3.createBucket merge {Bucket: name}, options
 
   # Sets the access control permissions on the whole bucket.
   bucketSetACL = (name, value) ->

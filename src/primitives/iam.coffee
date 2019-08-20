@@ -1,9 +1,17 @@
 import {cat, merge, toJSON} from "panda-parchment"
-import {applyConfiguration} from "../lift"
+import {prepareModule} from "../lift"
 
-iamPrimitive = (SDK) ->
+iamPrimitive = (options) ->
   (configuration) ->
-    iam = applyConfiguration configuration, SDK.IAM
+    iam = prepareModule options, configuration,
+      require("aws-sdk/clients/iam"),
+      [
+        "getRole"
+        "createRole"
+        "attachRolePolicy"
+        "detachRolePolicy"
+        "deleteRole"
+      ]
 
     role =
       get: (RoleName) ->

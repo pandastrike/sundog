@@ -1,19 +1,81 @@
-# Sundog
-# Base is a super thin wrapper around the AWS SDK, lifting each service module so you may use them with promises rather than callbacks.
-# Primatives is a slightly higher level wrapper - still promise based - to give the SDK a more functional flavor.
-
-import Base from "./lift-all"
-import Primatives from "./primitives"
+import {lift, liftService} from "./lift"
 import Helpers from "./helpers"
 
-start = (engine) ->
+import acm from "./primitives/acm"
+import asm from "./primitives/asm"
+import cloudformation from "./primitives/cloudformation"
+import cloudfront from "./primitives/cloudfront"
+import cloudwatchlogs from "./primitives/cloudwatchlogs"
+import cognito from "./primitives/cognito"
+import dynamodb from "./primitives/dynamodb"
+import ec2 from "./primitives/ec2"
+import iam from "./primitives/iam"
+import kms from "./primitives/kms"
+import lambda from "./primitives/lambda"
+import route53 from "./primitives/route53"
+import s3 from "./primitives/s3"
+import ses from "./primitives/ses"
+import sns from "./primitives/sns"
+import sqs from "./primitives/sqs"
+import step from "./primitives/step"
+import sts from "./primitives/sts"
+
+start = (options={}) ->
   Object.defineProperties {},
-    _AWS:
+    ACM:
       enumerable: true
-      get: -> Base engine
-    AWS:
+      get: -> acm options
+    ASM:
       enumerable: true
-      get: -> Primatives @_AWS, engine
+      get: -> asm options
+    CloudFormation:
+      enumerable: true
+      get: -> cloudformation options
+    CloudFront:
+      enumerable: true
+      get: -> cloudfront options
+    CloudWatchLogs:
+      enumerable: true
+      get: -> cloudwatchlogs options
+    Cognito:
+      enumerable: true
+      get: -> cognito options
+    DynamoDB:
+      enumerable: true
+      get: -> dynamodb options
+    EC2:
+      enumerable: true
+      get: -> ec2 options
+    IAM:
+      enumerable: true
+      get: -> iam options
+    KMS:
+      enumerable: true
+      get: -> kms options
+    Lambda:
+      enumerable: true
+      get: -> lambda options
+    Route53:
+      enumerable: true
+      get: -> route53 options
+    S3:
+      enumerable: true
+      get: -> s3 options
+    SES:
+      enumerable: true
+      get: -> ses options
+    SNS:
+      enumerable: true
+      get: -> sns options
+    SQS:
+      enumerable: true
+      get: -> sqs options
+    StepFunctions:
+      enumerable: true
+      get: -> step options
+    STS:
+      enumerable: true
+      get: -> sts options
 
 export default start
-export {Helpers}
+export {Helpers, lift, liftService}

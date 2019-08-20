@@ -1,10 +1,14 @@
 # Primitives for the service SES (simple email service).
 import {isObject, isArray, merge} from "panda-parchment"
-import {applyConfiguration} from "../lift"
+import {prepareModule} from "../lift"
 
-sesPrimitive = (SDK) ->
+sesPrimitive = (options) ->
   (configuration) ->
-    ses = applyConfiguration configuration, SDK.SES
+    ses = prepareModule options, configuration,
+      require("aws-sdk/clients/ses"),
+      [
+        "sendEmail"
+      ]
 
     sendEmail = (src, dest, subject, body, format="text", opts={}) ->
       Source = src

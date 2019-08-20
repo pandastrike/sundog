@@ -3,11 +3,19 @@
 import {cat} from "panda-parchment"
 import {collect} from "panda-river"
 import {where} from "./private-utils"
-import {applyConfiguration} from "../lift"
+import {prepareModule} from "../lift"
 
-cognitoPrimitive = (SDK) ->
+cognitoPrimitive = (options) ->
   (configuration) ->
-    cog = applyConfiguration configuration, SDK.CognitoIdentityServiceProvider
+    cog = prepareModule options, configuration,
+      require("aws-sdk/clients/cognitoidentityserviceprovider"),
+      [
+        "listUserPools"
+        "describeUserPool"
+        "listUserPoolClients"
+        "describeUserPoolClient"
+      ]
+
 
   poolList = (current=[], token) ->
     params = MaxResults: 60

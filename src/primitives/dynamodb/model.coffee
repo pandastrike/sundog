@@ -1,12 +1,9 @@
 import {empty, first, second} from "panda-parchment"
 import {to, wrap as _wrap, parse as _parse, getKey as _getKey} from "./helpers/types"
 import {numberEx, updateEx as _updateEx, dropEx, qv} from "./helpers/expressions"
-import Items from "./items"
-import Queries from "./queries"
 
 DynamoDB = (db) ->
-  {get: getItem, put:putItem, del:deleteItem, update:updateItem} = Items db
-  {query} = Queries db
+  {get: getItem, put:putItem, del:deleteItem, update:updateItem, query} = db
 
   Model = (definition) ->
     {table} = definition

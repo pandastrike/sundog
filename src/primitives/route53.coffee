@@ -2,11 +2,16 @@ import {cat, empty} from "panda-parchment"
 import {collect} from "panda-river"
 import {where} from "./private-utils"
 import {root, fullyQualify} from "../helpers/url"
-import {applyConfiguration} from "../lift"
+import {prepareModule} from "../lift"
 
-route53Primitive = (SDK) ->
+route53Primitive = (options) ->
   (configuration) ->
-    route53 = applyConfiguration configuration, SDK.Route53
+    route53 = prepareModule options, configuration,
+      require("aws-sdk/clients/route53"),
+      [
+        "listHostedZones"
+        "listResourceRecordSets"
+      ]
 
     hzList = (current=[], marker) ->
       params = MaxItems: "100"
