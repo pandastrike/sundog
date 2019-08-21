@@ -9,7 +9,7 @@ acmPrimitive = (options) ->
     acm = prepareModule options, configuration,
       require("aws-sdk/clients/acm"),
       [
-        "liftCertificates"
+        "listCertificates"
         "describeCertificate"
       ]
 
