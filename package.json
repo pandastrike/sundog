@@ -7,7 +7,9 @@
     "build/npm/src",
     "LICENSE"
   ],
-  "scripts": {},
+  "scripts": {
+    "build": "p9k build"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pandastrike/sundog.git"

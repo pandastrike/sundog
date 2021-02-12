@@ -22,13 +22,13 @@ handler = (cf) ->
     merge Distribution, {ETag: data.ETag}
 
   get = (name) ->
-    list = await list()
+    distributions = await list()
     pattern =
       Aliases:
         Quantity: 1,
         Items: [ regularlyQualify name ]
 
-    matches = collect where pattern, list
+    matches = collect where pattern, distributions
     if isEmpty matches
       false
     else
