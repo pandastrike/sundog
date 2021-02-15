@@ -1,7 +1,7 @@
 # Expression helpers make it easier to write the arcane string DSL that DynamoDB wants to achieve complex operations.
 import {curry} from "panda-garden"
 import Method from "panda-generics"
-import {first, values, isFunction, isObject, empty} from "panda-parchment"
+import {first, values, isFunction, isObject, isBoolean, isType, empty, keys} from "panda-parchment"
 import {to} from "./types"
 
 DELIMITER = "<###SUNDOGDYNAMODB###>"
