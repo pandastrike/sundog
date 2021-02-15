@@ -1,7 +1,7 @@
 #===========================================================================
 # Functions that act on Items
 #===========================================================================
-import {merge} from "panda-parchment"
+import {merge, empty} from "panda-parchment"
 import {parseConditional} from "./helpers/expressions"
 
 DynamoDB = (db) ->
@@ -22,8 +22,13 @@ DynamoDB = (db) ->
   update = (name, key, updateEx, options={}) ->
     p = {TableName: name, Key: key}
     {result, values:_values} = parseConditional updateEx
-    options.UpdateExpression = result if result
-    options.ExpressionAttributeValues = _values if _values
+
+    if (result && (!empty result))
+      options.UpdateExpression = result 
+
+    if (_values && (!empty _values))
+      options.ExpressionAttributeValues = _values
+
     await db.updateItem merge p, options
 
   {get, put, del, update}
